@@ -1,4 +1,5 @@
 import { User, Recipe, MealPlan, InsertUser, type DietaryPreference } from "@shared/schema";
+import { mockRecipes } from "@/lib/mock-data";
 
 export interface IStorage {
   // User operations
@@ -7,11 +8,11 @@ export interface IStorage {
   updateUserIngredients(id: number, ingredients: string[]): Promise<User>;
   updateUserBudget(id: number, budget: number): Promise<User>;
   updateUserPreferences(id: number, preferences: DietaryPreference[]): Promise<User>;
-  
+
   // Recipe operations
   getRecipes(): Promise<Recipe[]>;
   getRecipeById(id: number): Promise<Recipe | undefined>;
-  
+
   // Meal plan operations
   getMealPlans(userId: number): Promise<MealPlan[]>;
   addMealPlan(userId: number, recipeId: number, date: string): Promise<MealPlan>;
@@ -28,6 +29,14 @@ export class MemStorage implements IStorage {
     this.recipes = new Map();
     this.mealPlans = new Map();
     this.currentId = 1;
+
+    // Initialize with mock recipes
+    mockRecipes.forEach(recipe => {
+      this.recipes.set(recipe.id, recipe);
+      if (recipe.id >= this.currentId) {
+        this.currentId = recipe.id + 1;
+      }
+    });
   }
 
   async getUser(id: number): Promise<User | undefined> {
@@ -36,7 +45,12 @@ export class MemStorage implements IStorage {
 
   async createUser(user: InsertUser): Promise<User> {
     const id = this.currentId++;
-    const newUser = { ...user, id };
+    const newUser = {
+      id,
+      ingredients: user.ingredients || [],
+      budget: user.budget || 0,
+      dietaryPreferences: user.dietaryPreferences || [],
+    };
     this.users.set(id, newUser);
     return newUser;
   }
@@ -44,7 +58,7 @@ export class MemStorage implements IStorage {
   async updateUserIngredients(id: number, ingredients: string[]): Promise<User> {
     const user = await this.getUser(id);
     if (!user) throw new Error("User not found");
-    
+
     const updatedUser = { ...user, ingredients };
     this.users.set(id, updatedUser);
     return updatedUser;
@@ -53,7 +67,7 @@ export class MemStorage implements IStorage {
   async updateUserBudget(id: number, budget: number): Promise<User> {
     const user = await this.getUser(id);
     if (!user) throw new Error("User not found");
-    
+
     const updatedUser = { ...user, budget };
     this.users.set(id, updatedUser);
     return updatedUser;
@@ -62,7 +76,7 @@ export class MemStorage implements IStorage {
   async updateUserPreferences(id: number, preferences: DietaryPreference[]): Promise<User> {
     const user = await this.getUser(id);
     if (!user) throw new Error("User not found");
-    
+
     const updatedUser = { ...user, dietaryPreferences: preferences };
     this.users.set(id, updatedUser);
     return updatedUser;

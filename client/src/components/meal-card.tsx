@@ -16,7 +16,7 @@ export function MealCard({ recipe, onSwipe }: MealCardProps) {
   const handleDragEnd = (_e: never, info: PanInfo) => {
     const swipeThreshold = 100;
     const dragDistance = info.offset.x;
-    
+
     if (Math.abs(dragDistance) > swipeThreshold) {
       onSwipe(dragDistance > 0 ? "right" : "left");
     }
@@ -50,7 +50,7 @@ export function MealCard({ recipe, onSwipe }: MealCardProps) {
         <CardContent className="p-4 pt-0">
           <p className="text-sm text-muted-foreground mb-4">{recipe.description}</p>
           <div className="flex flex-wrap gap-2">
-            {recipe.dietaryTags.map((tag) => (
+            {(recipe.dietaryTags as string[]).map((tag) => (
               <Badge key={tag} variant="secondary">
                 {tag}
               </Badge>
