@@ -3,7 +3,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { X } from "lucide-react";
-import { ingredientsList } from "@/lib/mock-data";
+import { ingredientsList } from "@shared/mock-data";
 
 interface IngredientInputProps {
   value: string[];

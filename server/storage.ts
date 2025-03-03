@@ -1,5 +1,5 @@
 import { User, Recipe, MealPlan, InsertUser, type DietaryPreference } from "@shared/schema";
-import { mockRecipes } from "@/lib/mock-data";
+import { mockRecipes } from "@shared/mock-data";
 
 export interface IStorage {
   // User operations
