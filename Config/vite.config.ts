@@ -24,13 +24,20 @@ export default defineConfig({
   ],
   resolve: {
     alias: {
-      "@": path.resolve(__dirname, "client", "src"),
-      "@shared": path.resolve(__dirname, "shared"),
+      "@": path.resolve(__dirname, "..", "client", "src"),
+      "@shared": path.resolve(__dirname, "..", "shared"),
+      "@features": path.resolve(__dirname, "..", "client", "src", "features"),
+      "@components": path.resolve(__dirname, "..", "client", "src", "components"),
+      "@hooks": path.resolve(__dirname, "..", "client", "src", "hooks"),
+      "@services": path.resolve(__dirname, "..", "client", "src", "services"),
+      "@utils": path.resolve(__dirname, "..", "client", "src", "utils"),
+      "@styles": path.resolve(__dirname, "..", "client", "src", "styles"),
+      "@assets": path.resolve(__dirname, "..", "client", "src", "assets")
     },
   },
-  root: path.resolve(__dirname, "client"),
+  root: path.resolve(__dirname, "..", "client"),
   build: {
-    outDir: path.resolve(__dirname, "dist/public"),
+    outDir: path.resolve(__dirname, "..", "dist", "public"),
     emptyOutDir: true,
   },
 });
