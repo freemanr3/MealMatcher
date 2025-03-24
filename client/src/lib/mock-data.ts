@@ -1,4 +1,4 @@
-import type { Recipe } from "@shared/schema";
+import type { Recipe } from "./types";
 
 export const mockRecipes: Recipe[] = [
   {

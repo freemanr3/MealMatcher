@@ -1,7 +1,7 @@
 import { useState } from "react";
-import { Link } from "wouter";
+import { Link, useLocation } from "wouter";
 import { useQuery, useMutation } from "@tanstack/react-query";
-import { useToast } from "@/hooks/use-toast";
+import { useToast } from "@/components/ui/use-toast";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -10,7 +10,17 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { ArrowLeft } from "lucide-react";
 import { IngredientInput } from "@/components/ingredient-input";
 import { queryClient, apiRequest } from "@/lib/queryClient";
-import type { User, DietaryPreference } from "@shared/schema";
+import { API_CONFIG } from "@/lib/api-config";
+
+// Define types locally until shared schema is set up
+type DietaryPreference = 'vegetarian' | 'vegan' | 'gluten-free' | 'dairy-free' | 'low-carb' | 'keto' | 'paleo';
+
+interface User {
+  id: string;
+  budget: number;
+  ingredients: string[];
+  dietaryPreferences: DietaryPreference[];
+}
 
 const DIETARY_OPTIONS: { label: string; value: DietaryPreference }[] = [
   { label: "Vegetarian", value: "vegetarian" },
@@ -22,19 +32,36 @@ const DIETARY_OPTIONS: { label: string; value: DietaryPreference }[] = [
   { label: "Paleo", value: "paleo" },
 ];
 
+// Common ingredients by category
+const INGREDIENT_SUGGESTIONS = {
+  Proteins: ['chicken', 'beef', 'pork', 'tofu', 'eggs', 'fish'],
+  'Grains & Starches': ['rice', 'pasta', 'bread', 'quinoa', 'potatoes'],
+  Vegetables: ['tomatoes', 'onions', 'carrots', 'broccoli', 'spinach'],
+  Fruits: ['apples', 'bananas', 'oranges', 'berries', 'lemons'],
+  'Dairy & Alternatives': ['milk', 'cheese', 'yogurt', 'butter', 'cream'],
+  Pantry: ['flour', 'sugar', 'oil', 'vinegar', 'soy sauce'],
+};
+
 export default function Preferences() {
   const { toast } = useToast();
   const [budget, setBudget] = useState<string>("");
   const [ingredients, setIngredients] = useState<string[]>([]);
   const [dietaryPreferences, setDietaryPreferences] = useState<DietaryPreference[]>([]);
+  const [, setLocation] = useLocation();
 
   const { data: user } = useQuery<User>({
-    queryKey: ["/api/users/1"], // TODO: Get from auth
-    onSuccess: (data) => {
+    queryKey: ["/api/users/1"],
+    queryFn: async () => {
+      const response = await fetch("/api/users/1", API_CONFIG);
+      if (!response.ok) {
+        throw new Error('Failed to fetch user data');
+      }
+      const data = await response.json();
       setBudget(data.budget.toString());
-      setIngredients(data.ingredients as string[]);
-      setDietaryPreferences(data.dietaryPreferences as DietaryPreference[]);
-    },
+      setIngredients(data.ingredients);
+      setDietaryPreferences(data.dietaryPreferences);
+      return data;
+    }
   });
 
   const updateBudgetMutation = useMutation({
@@ -94,6 +121,27 @@ export default function Preferences() {
     updatePreferencesMutation.mutate(newPreferences);
   };
 
+  const handleIngredientsChange = (newIngredients: string[]) => {
+    setIngredients(newIngredients);
+    // In a real app, we'd save this to local storage or backend
+    localStorage.setItem('availableIngredients', JSON.stringify(newIngredients));
+  };
+
+  const handleQuickAdd = (ingredient: string) => {
+    if (!ingredients.includes(ingredient)) {
+      const newIngredients = [...ingredients, ingredient];
+      handleIngredientsChange(newIngredients);
+    }
+  };
+
+  const handleSave = () => {
+    toast({
+      title: 'Preferences Saved',
+      description: 'Your ingredients have been updated successfully.',
+    });
+    setLocation('/swipe');
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-b from-orange-50 to-white p-6">
       <div className="max-w-2xl mx-auto">
@@ -141,11 +189,7 @@ export default function Preferences() {
             </CardHeader>
             <CardContent>
               <IngredientInput
-                value={ingredients}
-                onChange={(newIngredients) => {
-                  setIngredients(newIngredients);
-                  updateIngredientsMutation.mutate(newIngredients);
-                }}
+                onIngredientsChange={handleIngredientsChange}
               />
             </CardContent>
           </Card>
@@ -169,6 +213,41 @@ export default function Preferences() {
               </div>
             </CardContent>
           </Card>
+
+          <div className="space-y-4">
+            {Object.entries(INGREDIENT_SUGGESTIONS).map(([category, items]) => (
+              <Card key={category}>
+                <CardHeader>
+                  <CardTitle className="text-lg">{category}</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="flex flex-wrap gap-2">
+                    {items.map((ingredient) => (
+                      <Button
+                        key={ingredient}
+                        variant="outline"
+                        size="sm"
+                        className={`rounded-full ${
+                          ingredients.includes(ingredient)
+                            ? 'bg-primary text-primary-foreground'
+                            : ''
+                        }`}
+                        onClick={() => handleQuickAdd(ingredient)}
+                      >
+                        {ingredient}
+                      </Button>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+
+          <div className="flex justify-end">
+            <Button size="lg" onClick={handleSave}>
+              Start Swiping
+            </Button>
+          </div>
         </div>
       </div>
     </div>

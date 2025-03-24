@@ -1,5 +1,4 @@
 import { Link } from "wouter";
-import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Utensils, Calendar, Settings } from "lucide-react";
 
@@ -10,7 +9,7 @@ export default function Home() {
         <div className="text-center space-y-4">
           <h1 className="text-4xl font-bold text-orange-600">Meal Matcher</h1>
           <p className="text-muted-foreground">
-            Swipe right on meals you love, create your perfect meal plan
+            Swipe through meals based on ingredients you already have
           </p>
         </div>
 
@@ -22,7 +21,7 @@ export default function Home() {
                 <div>
                   <h2 className="font-semibold">Start Swiping</h2>
                   <p className="text-sm text-muted-foreground">
-                    Discover meals that match your preferences
+                    Find meals that match your available ingredients
                   </p>
                 </div>
               </CardContent>
@@ -36,7 +35,7 @@ export default function Home() {
                 <div>
                   <h2 className="font-semibold">Meal Planner</h2>
                   <p className="text-sm text-muted-foreground">
-                    View and manage your meal schedule
+                    View and manage your saved meals
                   </p>
                 </div>
               </CardContent>
@@ -48,9 +47,9 @@ export default function Home() {
               <CardContent className="flex items-center gap-4 p-6">
                 <Settings className="w-8 h-8 text-orange-500" />
                 <div>
-                  <h2 className="font-semibold">Preferences</h2>
+                  <h2 className="font-semibold">My Ingredients</h2>
                   <p className="text-sm text-muted-foreground">
-                    Update your dietary preferences and budget
+                    Update your available ingredients and preferences
                   </p>
                 </div>
               </CardContent>

@@ -1,64 +1,69 @@
-import { useState } from "react";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { X } from "lucide-react";
+import { useState, KeyboardEvent } from 'react';
+import { X } from 'lucide-react';
+import { Button } from './ui/button';
+import { Input } from './ui/input';
 import { ingredientsList } from "@shared/mock-data";
 
 interface IngredientInputProps {
-  value: string[];
-  onChange: (ingredients: string[]) => void;
+  onIngredientsChange: (ingredients: string[]) => void;
 }
 
-export function IngredientInput({ value, onChange }: IngredientInputProps) {
-  const [inputValue, setInputValue] = useState("");
+export function IngredientInput({ onIngredientsChange }: IngredientInputProps) {
+  const [ingredients, setIngredients] = useState<string[]>([]);
+  const [currentIngredient, setCurrentIngredient] = useState('');
 
-  const handleAddIngredient = () => {
-    if (inputValue && !value.includes(inputValue)) {
-      onChange([...value, inputValue]);
-      setInputValue("");
+  const addIngredient = () => {
+    if (currentIngredient.trim() && !ingredients.includes(currentIngredient.trim())) {
+      const newIngredients = [...ingredients, currentIngredient.trim()];
+      setIngredients(newIngredients);
+      onIngredientsChange(newIngredients);
+      setCurrentIngredient('');
     }
   };
 
-  const handleRemoveIngredient = (ingredient: string) => {
-    onChange(value.filter((i) => i !== ingredient));
+  const removeIngredient = (ingredient: string) => {
+    const newIngredients = ingredients.filter(i => i !== ingredient);
+    setIngredients(newIngredients);
+    onIngredientsChange(newIngredients);
+  };
+
+  const handleKeyDown = (e: KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      addIngredient();
+    }
   };
 
   return (
     <div className="space-y-4">
       <div className="flex gap-2">
         <Input
-          list="ingredients"
-          value={inputValue}
-          onChange={(e) => setInputValue(e.target.value)}
-          placeholder="Add ingredient..."
-          onKeyDown={(e) => {
-            if (e.key === "Enter") {
-              e.preventDefault();
-              handleAddIngredient();
-            }
-          }}
+          type="text"
+          placeholder="Enter an ingredient"
+          value={currentIngredient}
+          onChange={(e) => setCurrentIngredient(e.target.value)}
+          onKeyDown={handleKeyDown}
+          className="flex-1"
         />
-        <datalist id="ingredients">
-          {ingredientsList.map((ingredient) => (
-            <option key={ingredient} value={ingredient} />
-          ))}
-        </datalist>
-        <Button onClick={handleAddIngredient}>Add</Button>
+        <Button onClick={addIngredient} type="button">
+          Add
+        </Button>
       </div>
+      
       <div className="flex flex-wrap gap-2">
-        {value.map((ingredient) => (
-          <Badge
+        {ingredients.map((ingredient) => (
+          <div
             key={ingredient}
-            variant="secondary"
-            className="flex items-center gap-1"
+            className="flex items-center gap-1 bg-orange-100 text-orange-800 px-3 py-1 rounded-full"
           >
-            {ingredient}
-            <X
-              className="w-3 h-3 cursor-pointer"
-              onClick={() => handleRemoveIngredient(ingredient)}
-            />
-          </Badge>
+            <span>{ingredient}</span>
+            <button
+              onClick={() => removeIngredient(ingredient)}
+              className="hover:text-orange-950"
+            >
+              <X className="h-4 w-4" />
+            </button>
+          </div>
         ))}
       </div>
     </div>
