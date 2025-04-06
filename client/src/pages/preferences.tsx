@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link, useLocation } from "wouter";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { useToast } from "@/components/ui/use-toast";
@@ -7,10 +7,12 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, Plus, Minus, ChevronLeft, Trash2 } from "lucide-react";
 import { IngredientInput } from "@/components/ingredient-input";
 import { queryClient, apiRequest } from "@/lib/queryClient";
 import { API_CONFIG } from "@/lib/api-config";
+import { Header } from "@/components/header";
+import { cn } from "@/lib/utils";
 
 // Define types locally until shared schema is set up
 type DietaryPreference = 'vegetarian' | 'vegan' | 'gluten-free' | 'dairy-free' | 'low-carb' | 'keto' | 'paleo';
@@ -20,6 +22,17 @@ interface User {
   budget: number;
   ingredients: string[];
   dietaryPreferences: DietaryPreference[];
+}
+
+interface IngredientWithQuantity {
+  name: string;
+  quantity: number;
+  unit: string;
+}
+
+interface Ingredient {
+  name: string;
+  quantity: string;
 }
 
 const DIETARY_OPTIONS: { label: string; value: DietaryPreference }[] = [
@@ -42,213 +55,128 @@ const INGREDIENT_SUGGESTIONS = {
   Pantry: ['flour', 'sugar', 'oil', 'vinegar', 'soy sauce'],
 };
 
-export default function Preferences() {
+export function IngredientsPage() {
   const { toast } = useToast();
-  const [budget, setBudget] = useState<string>("");
-  const [ingredients, setIngredients] = useState<string[]>([]);
-  const [dietaryPreferences, setDietaryPreferences] = useState<DietaryPreference[]>([]);
   const [, setLocation] = useLocation();
+  const [ingredients, setIngredients] = useState<Ingredient[]>([]);
+  const [newIngredient, setNewIngredient] = useState<Ingredient>({ name: '', quantity: '' });
+  const [selectedIngredient, setSelectedIngredient] = useState<Ingredient | null>(null);
 
-  const { data: user } = useQuery<User>({
-    queryKey: ["/api/users/1"],
-    queryFn: async () => {
-      const response = await fetch("/api/users/1", API_CONFIG);
-      if (!response.ok) {
-        throw new Error('Failed to fetch user data');
-      }
-      const data = await response.json();
-      setBudget(data.budget.toString());
-      setIngredients(data.ingredients);
-      setDietaryPreferences(data.dietaryPreferences);
-      return data;
-    }
-  });
+  useEffect(() => {
+    // Load saved ingredients from localStorage
+    const savedIngredients = JSON.parse(localStorage.getItem('selectedIngredients') || '[]');
+    setIngredients(savedIngredients);
+  }, []);
 
-  const updateBudgetMutation = useMutation({
-    mutationFn: async (newBudget: number) => {
-      const res = await apiRequest("PATCH", "/api/users/1/budget", { budget: newBudget });
-      return res.json();
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/users/1"] });
-      toast({
-        title: "Budget updated",
-        description: "Your budget has been successfully updated.",
-      });
-    },
-  });
-
-  const updateIngredientsMutation = useMutation({
-    mutationFn: async (newIngredients: string[]) => {
-      const res = await apiRequest("PATCH", "/api/users/1/ingredients", { ingredients: newIngredients });
-      return res.json();
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/users/1"] });
-      toast({
-        title: "Ingredients updated",
-        description: "Your ingredients list has been successfully updated.",
-      });
-    },
-  });
-
-  const updatePreferencesMutation = useMutation({
-    mutationFn: async (newPreferences: DietaryPreference[]) => {
-      const res = await apiRequest("PATCH", "/api/users/1/preferences", { preferences: newPreferences });
-      return res.json();
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/users/1"] });
-      toast({
-        title: "Preferences updated",
-        description: "Your dietary preferences have been successfully updated.",
-      });
-    },
-  });
-
-  const handleBudgetSubmit = () => {
-    const numBudget = parseFloat(budget);
-    if (!isNaN(numBudget) && numBudget >= 0) {
-      updateBudgetMutation.mutate(numBudget);
+  const handleAddIngredient = () => {
+    if (newIngredient.name && newIngredient.quantity) {
+      const updatedIngredients = [...ingredients, newIngredient];
+      setIngredients(updatedIngredients);
+      localStorage.setItem('selectedIngredients', JSON.stringify(updatedIngredients));
+      setNewIngredient({ name: '', quantity: '' });
     }
   };
 
-  const handleDietaryToggle = (preference: DietaryPreference) => {
-    const newPreferences = dietaryPreferences.includes(preference)
-      ? dietaryPreferences.filter(p => p !== preference)
-      : [...dietaryPreferences, preference];
-    setDietaryPreferences(newPreferences);
-    updatePreferencesMutation.mutate(newPreferences);
-  };
-
-  const handleIngredientsChange = (newIngredients: string[]) => {
-    setIngredients(newIngredients);
-    // In a real app, we'd save this to local storage or backend
-    localStorage.setItem('availableIngredients', JSON.stringify(newIngredients));
-  };
-
-  const handleQuickAdd = (ingredient: string) => {
-    if (!ingredients.includes(ingredient)) {
-      const newIngredients = [...ingredients, ingredient];
-      handleIngredientsChange(newIngredients);
+  const handleRemoveIngredient = (index: number) => {
+    const updatedIngredients = ingredients.filter((_, i) => i !== index);
+    setIngredients(updatedIngredients);
+    localStorage.setItem('selectedIngredients', JSON.stringify(updatedIngredients));
+    if (selectedIngredient && selectedIngredient === ingredients[index]) {
+      setSelectedIngredient(null);
     }
+  };
+
+  const handleSelectIngredient = (ingredient: Ingredient) => {
+    setSelectedIngredient(ingredient);
   };
 
   const handleSave = () => {
-    toast({
-      title: 'Preferences Saved',
-      description: 'Your ingredients have been updated successfully.',
-    });
-    setLocation('/swipe');
+    setLocation('/discover');
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-orange-50 to-white p-6">
-      <div className="max-w-2xl mx-auto">
-        <div className="flex items-center mb-6">
-          <Link href="/">
-            <Button variant="ghost" size="icon">
-              <ArrowLeft className="h-6 w-6" />
-            </Button>
-          </Link>
-          <h1 className="text-2xl font-bold ml-2">Preferences</h1>
-        </div>
+    <div className="container mx-auto p-4">
+      <div className="flex items-center mb-6">
+        <Link href="/discover">
+          <Button variant="ghost" size="icon">
+            <ChevronLeft className="h-4 w-4" />
+          </Button>
+        </Link>
+        <h1 className="text-2xl font-bold ml-4">My Ingredients</h1>
+      </div>
 
-        <div className="grid gap-6">
-          <Card>
-            <CardHeader>
-              <CardTitle>Budget Settings</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="flex gap-4">
-                <div className="flex-1">
-                  <Label htmlFor="budget">Weekly Budget ($)</Label>
-                  <Input
-                    id="budget"
-                    type="number"
-                    min="0"
-                    step="0.01"
-                    value={budget}
-                    onChange={(e) => setBudget(e.target.value)}
-                  />
-                </div>
-                <Button
-                  className="self-end"
-                  onClick={handleBudgetSubmit}
-                  disabled={updateBudgetMutation.isPending}
-                >
-                  Save Budget
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader>
-              <CardTitle>Available Ingredients</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <IngredientInput
-                onIngredientsChange={handleIngredientsChange}
+      <Card className="p-4 mb-6">
+        <div className="space-y-4">
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <Label htmlFor="ingredient">Ingredient</Label>
+              <Input
+                id="ingredient"
+                value={newIngredient.name}
+                onChange={(e) => setNewIngredient({ ...newIngredient, name: e.target.value })}
+                placeholder="e.g., chicken breast"
               />
-            </CardContent>
-          </Card>
+            </div>
+            <div>
+              <Label htmlFor="quantity">Quantity</Label>
+              <Input
+                id="quantity"
+                value={newIngredient.quantity}
+                onChange={(e) => setNewIngredient({ ...newIngredient, quantity: e.target.value })}
+                placeholder="e.g., 500g"
+              />
+            </div>
+          </div>
+          <Button onClick={handleAddIngredient} className="w-full">
+            <Plus className="mr-2 h-4 w-4" />
+            Add Ingredient
+          </Button>
+        </div>
+      </Card>
 
-          <Card>
-            <CardHeader>
-              <CardTitle>Dietary Preferences</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                {DIETARY_OPTIONS.map(({ label, value }) => (
-                  <div key={value} className="flex items-center space-x-2">
-                    <Checkbox
-                      id={value}
-                      checked={dietaryPreferences.includes(value)}
-                      onCheckedChange={() => handleDietaryToggle(value)}
-                    />
-                    <Label htmlFor={value}>{label}</Label>
-                  </div>
-                ))}
-              </div>
-            </CardContent>
+      <div className="space-y-4">
+        <h2 className="text-lg font-semibold">Your Ingredients</h2>
+        {ingredients.length === 0 ? (
+          <Card className="p-4">
+            <p className="text-muted-foreground">No ingredients added yet. Add some to get recipe suggestions!</p>
           </Card>
-
+        ) : (
           <div className="space-y-4">
-            {Object.entries(INGREDIENT_SUGGESTIONS).map(([category, items]) => (
-              <Card key={category}>
-                <CardHeader>
-                  <CardTitle className="text-lg">{category}</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="flex flex-wrap gap-2">
-                    {items.map((ingredient) => (
-                      <Button
-                        key={ingredient}
-                        variant="outline"
-                        size="sm"
-                        className={`rounded-full ${
-                          ingredients.includes(ingredient)
-                            ? 'bg-primary text-primary-foreground'
-                            : ''
-                        }`}
-                        onClick={() => handleQuickAdd(ingredient)}
-                      >
-                        {ingredient}
-                      </Button>
-                    ))}
+            {ingredients.map((ingredient, index) => (
+              <Card 
+                key={index} 
+                className={cn(
+                  "p-4 cursor-pointer transition-colors",
+                  selectedIngredient?.name === ingredient.name ? "bg-orange-50 border-orange-200" : ""
+                )}
+                onClick={() => handleSelectIngredient(ingredient)}
+              >
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="font-medium">{ingredient.name}</p>
+                    <p className="text-sm text-muted-foreground">{ingredient.quantity}</p>
                   </div>
-                </CardContent>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleRemoveIngredient(index);
+                    }}
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </Button>
+                </div>
               </Card>
             ))}
           </div>
+        )}
+      </div>
 
-          <div className="flex justify-end">
-            <Button size="lg" onClick={handleSave}>
-              Start Swiping
-            </Button>
-          </div>
-        </div>
+      <div className="mt-6">
+        <Button onClick={handleSave} className="w-full">
+          Save and Continue
+        </Button>
       </div>
     </div>
   );

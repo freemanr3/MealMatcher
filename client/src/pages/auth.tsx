@@ -36,7 +36,7 @@ export default function AuthPage() {
     await new Promise(resolve => setTimeout(resolve, 1000)); // Simulated delay
     
     toast({
-      title: "Welcome to MealMatcher!",
+      title: "Welcome to Pantry Pal!",
       description: "Your account has been created successfully.",
     });
     
@@ -48,9 +48,9 @@ export default function AuthPage() {
     <div className="min-h-screen bg-gradient-to-b from-orange-50 to-white flex items-center justify-center p-4">
       <Card className="w-full max-w-md">
         <CardHeader className="text-center">
-          <CardTitle className="text-3xl font-bold text-orange-600">MealMatcher</CardTitle>
+          <CardTitle className="text-3xl font-bold text-orange-600">Pantry Pal</CardTitle>
           <CardDescription>
-            Discover recipes that match your taste and pantry
+            Your personal recipe discovery and meal planning assistant
           </CardDescription>
         </CardHeader>
         <CardContent>

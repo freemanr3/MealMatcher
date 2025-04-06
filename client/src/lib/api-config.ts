@@ -19,6 +19,7 @@ export const API_CONFIG = {
   headers: {
     'Content-Type': 'application/json',
     'Accept': 'application/json',
+    'x-api-key': import.meta.env.VITE_SPOONACULAR_API_KEY || '',
   },
   credentials: 'include' as RequestCredentials,
 };

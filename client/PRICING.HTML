@@ -1,0 +1,948 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Pantry Pal - Effortless Meal Planning & Grocery Management</title>
+  <style>
+    /* Global Styles with Updated Colors */
+    :root {
+      --primary: #FF7F50;     /* Coral/Orange */
+      --secondary: #FFDAB9;   /* Peach */
+      --accent: #4682B4;      /* Steel Blue - complementary */
+      --dark-orange: #E86C30; /* Darker orange for contrast */
+      --light-peach: #FFE4C4; /* Light peach for backgrounds */
+      --light: #FFF8F0;       /* Very light peach for backgrounds */
+      --dark: #2D2926;        /* Dark charcoal */
+      --gray: #6C757D;
+      --light-gray: #E9ECEF;
+    }
+    
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+    
+    body {
+      line-height: 1.6;
+      color: var(--dark);
+      background-color: #fff;
+    }
+    
+    .container {
+      width: 100%;
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 0 20px;
+    }
+    
+    /* Typography */
+    h1, h2, h3, h4, h5, h6 {
+      font-weight: 700;
+      line-height: 1.2;
+      margin-bottom: 1rem;
+    }
+    
+    h1 {
+      font-size: 2.5rem;
+    }
+    
+    h2 {
+      font-size: 2rem;
+    }
+    
+    h3 {
+      font-size: 1.75rem;
+    }
+    
+    p {
+      margin-bottom: 1rem;
+    }
+    
+    /* Buttons */
+    .btn {
+      display: inline-block;
+      padding: 12px 24px;
+      border-radius: 30px;
+      text-decoration: none;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      border: none;
+    }
+    
+    .btn-primary {
+      background-color: var(--primary);
+      color: white;
+    }
+    
+    .btn-primary:hover {
+      background-color: var(--dark-orange);
+      transform: translateY(-3px);
+      box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    }
+    
+    .btn-secondary {
+      background-color: white;
+      color: var(--primary);
+      border: 2px solid var(--primary);
+    }
+    
+    .btn-secondary:hover {
+      background-color: var(--light-peach);
+      transform: translateY(-3px);
+    }
+    
+    .btn-large {
+      padding: 16px 32px;
+      font-size: 1.1rem;
+    }
+    
+    /* Navigation */
+    .nav {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 20px 0;
+      position: sticky;
+      top: 0;
+      background-color: white;
+      z-index: 1000;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    }
+    
+    .nav-logo {
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: var(--primary);
+      text-decoration: none;
+    }
+    
+    .nav-links {
+      display: flex;
+      gap: 30px;
+    }
+    
+    .nav-links a {
+      text-decoration: none;
+      color: var(--dark);
+      font-weight: 500;
+      transition: color 0.3s ease;
+    }
+    
+    .nav-links a:hover {
+      color: var(--primary);
+    }
+    
+    /* Header Section */
+    .header {
+      text-align: center;
+      padding: 80px 0 60px;
+      background-color: var(--light);
+    }
+    
+    .header h1 {
+      margin-bottom: 20px;
+      max-width: 800px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+    
+    .header p {
+      font-size: 1.25rem;
+      color: var(--gray);
+      max-width: 600px;
+      margin-left: auto;
+      margin-right: auto;
+      margin-bottom: 40px;
+    }
+    
+    /* Pricing Section */
+    .pricing-section {
+      padding: 60px 0;
+      background-color: white;
+    }
+    
+    .pricing-header {
+      text-align: center;
+      margin-bottom: 60px;
+    }
+    
+    .pricing-plans {
+      display: flex;
+      justify-content: center;
+      gap: 30px;
+      margin-bottom: 50px;
+      flex-wrap: wrap;
+    }
+    
+    .pricing-plan {
+      background-color: white;
+      border-radius: 10px;
+      box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+      padding: 30px;
+      flex: 1;
+      min-width: 280px;
+      max-width: 350px;
+      position: relative;
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+    
+    .pricing-plan:hover {
+      transform: translateY(-10px);
+      box-shadow: 0 15px 30px rgba(0,0,0,0.1);
+    }
+    
+    .pricing-plan.popular {
+      border: 3px solid var(--primary);
+      transform: scale(1.05);
+    }
+    
+    .popular-tag {
+      position: absolute;
+      top: -15px;
+      left: 50%;
+      transform: translateX(-50%);
+      background-color: var(--primary);
+      color: white;
+      padding: 5px 15px;
+      border-radius: 20px;
+      font-weight: 600;
+      font-size: 0.85rem;
+    }
+    
+    .plan-name {
+      font-size: 1.5rem;
+      margin-bottom: 10px;
+      text-align: center;
+    }
+    
+    .plan-price {
+      font-size: 2.5rem;
+      font-weight: 700;
+      margin-bottom: 10px;
+      text-align: center;
+      color: var(--primary);
+    }
+    
+    .plan-billing {
+      color: var(--gray);
+      margin-bottom: 20px;
+      text-align: center;
+    }
+    
+    .plan-features {
+      list-style-type: none;
+      margin-bottom: 30px;
+    }
+    
+    .plan-features li {
+      margin-bottom: 10px;
+      padding-left: 25px;
+      position: relative;
+    }
+    
+    .plan-features li::before {
+      content: "✓";
+      color: var(--primary);
+      position: absolute;
+      left: 0;
+      font-weight: bold;
+    }
+    
+    .plan-cta {
+      text-align: center;
+    }
+    
+    /* Feature Comparison Table */
+    .feature-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-bottom: 60px;
+    }
+    
+    .feature-table th,
+    .feature-table td {
+      padding: 15px;
+      text-align: center;
+      border-bottom: 1px solid var(--light-gray);
+    }
+    
+    .feature-table th {
+      background-color: var(--light);
+      font-weight: 600;
+    }
+    
+    .feature-table th:first-child,
+    .feature-table td:first-child {
+      text-align: left;
+      font-weight: 500;
+    }
+    
+    .feature-table .check {
+      color: var(--primary);
+      font-size: 1.2rem;
+    }
+    
+    .feature-table .feature-category {
+      background-color: var(--light-peach);
+      font-weight: 600;
+    }
+    
+    /* Social Proof Section */
+    .social-proof {
+      padding: 60px 0;
+      text-align: center;
+      background-color: var(--light);
+    }
+    
+    .partner-logos {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 40px;
+      margin: 40px 0;
+      opacity: 0.7;
+    }
+    
+    .stats {
+      display: flex;
+      justify-content: center;
+      flex-wrap: wrap;
+      gap: 40px;
+      margin-top: 40px;
+    }
+    
+    .stat {
+      text-align: center;
+    }
+    
+    .stat-number {
+      font-size: 2.5rem;
+      font-weight: 700;
+      color: var(--primary);
+      margin-bottom: 10px;
+      display: block;
+    }
+    
+    .stat-label {
+      font-size: 1rem;
+      color: var(--gray);
+    }
+    
+    /* Testimonials Section */
+    .testimonials {
+      padding: 60px 0;
+      background-color: white;
+    }
+    
+    .testimonials-header {
+      text-align: center;
+      margin-bottom: 60px;
+    }
+    
+    .testimonials-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 30px;
+    }
+    
+    .testimonial {
+      background-color: var(--light);
+      border-radius: 10px;
+      box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+      padding: 30px;
+      position: relative;
+    }
+    
+    .testimonial-content {
+      margin-bottom: 20px;
+      font-style: italic;
+    }
+    
+    .testimonial-author {
+      display: flex;
+      align-items: center;
+    }
+    
+    .author-avatar {
+      width: 50px;
+      height: 50px;
+      border-radius: 50%;
+      background-color: var(--light-gray);
+      margin-right: 15px;
+      overflow: hidden;
+    }
+    
+    .author-info h4 {
+      margin-bottom: 0;
+      font-size: 1rem;
+    }
+    
+    .author-info p {
+      margin-bottom: 0;
+      color: var(--gray);
+      font-size: 0.9rem;
+    }
+    
+    .result {
+      background-color: var(--secondary);
+      padding: 10px 15px;
+      border-radius: 5px;
+      margin-top: 15px;
+      font-weight: 600;
+      color: var(--dark-orange);
+    }
+    
+    /* Call To Value Section */
+    .ctv-section {
+      text-align: center;
+      padding: 80px 0;
+      background-color: var(--primary);
+      color: white;
+    }
+    
+    .ctv-section h2 {
+      margin-bottom: 20px;
+    }
+    
+    .ctv-section p {
+      margin-bottom: 40px;
+      max-width: 600px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+    
+    .ctv-btn {
+      background-color: white;
+      color: var(--primary);
+      font-size: 1.1rem;
+      padding: 15px 30px;
+    }
+    
+    .ctv-btn:hover {
+      background-color: var(--light);
+      transform: translateY(-3px);
+      box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+    }
+    
+    /* Closing Section */
+    .closing-section {
+      text-align: center;
+      padding: 80px 0;
+      background-color: var(--light);
+    }
+    
+    .closing-section h2 {
+      margin-bottom: 20px;
+    }
+    
+    .closing-section p {
+      margin-bottom: 10px;
+      max-width: 600px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+    
+    .closing-trust {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 20px;
+      margin: 30px 0;
+      flex-wrap: wrap;
+    }
+    
+    .trust-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      color: var(--gray);
+    }
+    
+    .trust-item span:first-child {
+      color: var(--primary);
+    }
+    
+    /* FAQ Section */
+    .faq-section {
+      padding: 60px 0;
+      background-color: white;
+      border-top: 1px solid var(--light-peach);
+    }
+    
+    .faq-header {
+      text-align: center;
+      margin-bottom: 60px;
+    }
+    
+    .faq-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 30px;
+    }
+    
+    .faq-item {
+      margin-bottom: 30px;
+    }
+    
+    .faq-item h4 {
+      margin-bottom: 10px;
+      color: var(--primary);
+    }
+    
+    .faq-item p {
+      color: var(--gray);
+    }
+    
+    /* Footer */
+    .footer {
+      background-color: var(--dark);
+      color: white;
+      padding: 60px 0 30px;
+    }
+    
+    .footer-content {
+      display: flex;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 40px;
+      margin-bottom: 40px;
+    }
+    
+    .footer-logo {
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: var(--primary);
+      text-decoration: none;
+      margin-bottom: 15px;
+      display: block;
+    }
+    
+    .footer-col {
+      min-width: 200px;
+    }
+    
+    .footer-col h4 {
+      margin-bottom: 20px;
+      font-size: 1.1rem;
+      color: var(--secondary);
+    }
+    
+    .footer-links {
+      list-style-type: none;
+    }
+    
+    .footer-links li {
+      margin-bottom: 10px;
+    }
+    
+    .footer-links a {
+      color: var(--light-gray);
+      text-decoration: none;
+      transition: color 0.3s ease;
+    }
+    
+    .footer-links a:hover {
+      color: var(--primary);
+    }
+    
+    .footer-bottom {
+      text-align: center;
+      padding-top: 30px;
+      border-top: 1px solid rgba(255,255,255,0.1);
+      color: var(--light-gray);
+      font-size: 0.9rem;
+    }
+    
+    .trust-signals {
+      display: flex;
+      gap: 20px;
+      margin-top: 20px;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+    
+    .trust-signal {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      font-size: 0.9rem;
+    }
+    
+    /* Responsive */
+    @media (max-width: 768px) {
+      .nav-links {
+        display: none;
+      }
+      
+      .pricing-plan {
+        max-width: none;
+      }
+      
+      .pricing-plan.popular {
+        transform: none;
+      }
+      
+      .feature-table {
+        font-size: 0.9rem;
+      }
+      
+      h1 {
+        font-size: 2rem;
+      }
+      
+      h2 {
+        font-size: 1.75rem;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <!-- Navigation -->
+  <nav class="nav">
+    <div class="container" style="display: flex; justify-content: space-between; align-items: center;">
+      <a href="#" class="nav-logo">Pantry Pal</a>
+      <div class="nav-links">
+        <a href="#features">Features</a>
+        <a href="#pricing">Pricing</a>
+        <a href="#how-it-works">How It Works</a>
+        <a href="#integrations">Integrations</a>
+        <a href="#faq">FAQs</a>
+      </div>
+      <a href="#try-free" class="btn btn-primary">Try Free</a>
+    </div>
+  </nav>
+  
+  <!-- Header Section -->
+  <header class="header">
+    <div class="container">
+      <h1>Effortless Meal Planning, Zero Food Waste - No More Guesswork in Grocery Shopping!</h1>
+      <p>Pantry Pal uses AI to create personalized meal plans, streamline grocery lists, and track your pantry inventory—cutting your food waste by up to 40% and saving you time and money.</p>
+      <a href="#try-free" class="btn btn-primary btn-large">Start Your 14-Day Free Trial</a>
+    </div>
+  </header>
+  
+  <!-- Social Proof Section -->
+  <section class="social-proof">
+    <div class="container">
+      <h3>Trusted by families and food enthusiasts everywhere</h3>
+      <div class="partner-logos">
+        <div>
+          <img src="/api/placeholder/120/40" alt="Whole Foods" />
+        </div>
+        <div>
+          <img src="/api/placeholder/120/40" alt="Blue Apron" />
+        </div>
+        <div>
+          <img src="/api/placeholder/120/40" alt="Instacart" />
+        </div>
+        <div>
+          <img src="/api/placeholder/120/40" alt="Food Network" />
+        </div>
+      </div>
+      <div class="stats">
+        <div class="stat">
+          <span class="stat-number">100K+</span>
+          <span class="stat-label">Families saving on groceries</span>
+        </div>
+        <div class="stat">
+          <span class="stat-number">$5.3M</span>
+          <span class="stat-label">Saved in reduced food waste</span>
+        </div>
+        <div class="stat">
+          <span class="stat-number">30%</span>
+          <span class="stat-label">Average reduction in cooking time</span>
+        </div>
+      </div>
+    </div>
+  </section>
+  
+  <!-- Pricing Section -->
+  <section id="pricing" class="pricing-section">
+    <div class="container">
+      <div class="pricing-header">
+        <h2>Simple, Transparent Pricing</h2>
+        <p>Choose the plan that fits your household needs</p>
+      </div>
+      <div class="pricing-plans">
+        <!-- Free Plan -->
+        <div class="pricing-plan">
+          <h3 class="plan-name">Free</h3>
+          <div class="plan-price">$0</div>
+          <p class="plan-billing">Forever Free</p>
+          <p>Perfect for individuals just getting started with meal planning</p>
+          <ul class="plan-features">
+            <li>Basic meal planning</li>
+            <li>Simple grocery lists</li>
+            <li>Up to 10 saved recipes</li>
+            <li>Basic inventory tracking</li>
+          </ul>
+          <div class="plan-cta">
+            <a href="#try-free" class="btn btn-secondary">Get Started</a>
+          </div>
+        </div>
+        
+        <!-- Pro Plan -->
+        <div class="pricing-plan popular">
+          <div class="popular-tag">Most Popular</div>
+          <h3 class="plan-name">Pro</h3>
+          <div class="plan-price">$9.99</div>
+          <p class="plan-billing">per month</p>
+          <p>Ideal for busy individuals and small families looking to save time and money</p>
+          <ul class="plan-features">
+            <li>All Free features</li>
+            <li>AI-powered meal suggestions</li>
+            <li>Unlimited recipes</li>
+            <li>Smart expiration tracking</li>
+            <li>Budget optimization</li>
+            <li>Premium integrations</li>
+          </ul>
+          <div class="plan-cta">
+            <a href="#try-free" class="btn btn-primary">Start 14-Day Trial</a>
+          </div>
+        </div>
+        
+        <!-- Family Plan -->
+        <div class="pricing-plan">
+          <h3 class="plan-name">Family</h3>
+          <div class="plan-price">$19.99</div>
+          <p class="plan-billing">per month</p>
+          <p>Perfect for large families and meal planning enthusiasts</p>
+          <ul class="plan-features">
+            <li>All Pro features</li>
+            <li>Up to 6 family profiles</li>
+            <li>Nutritional analysis</li>
+            <li>Dietary restriction support</li>
+            <li>Advanced meal planning</li>
+            <li>Priority customer support</li>
+          </ul>
+          <div class="plan-cta">
+            <a href="#try-free" class="btn btn-secondary">Start 14-Day Trial</a>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Feature Comparison Table -->
+      <table class="feature-table">
+        <thead>
+          <tr>
+            <th>Features</th>
+            <th>Free</th>
+            <th>Pro</th>
+            <th>Family</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr class="feature-category">
+            <td>Meal Planning</td>
+            <td></td>
+            <td></td>
+            <td></td>
+          </tr>
+          <tr>
+            <td>Weekly meal plans</td>
+            <td class="check">✓</td>
+            <td class="check">✓</td>
+            <td class="check">✓</td>
+          </tr>
+          <tr>
+            <td>AI recipe suggestions</td>
+            <td>-</td>
+            <td class="check">✓</td>
+            <td class="check">✓</td>
+          </tr>
+          <tr>
+            <td>Custom meal preferences</td>
+            <td>Basic</td>
+            <td>Advanced</td>
+            <td>Advanced</td>
+          </tr>
+          <tr>
+            <td>Dietary restrictions</td>
+            <td>2 options</td>
+            <td>10+ options</td>
+            <td>Unlimited</td>
+          </tr>
+          
+          <tr class="feature-category">
+            <td>Grocery Management</td>
+            <td></td>
+            <td></td>
+            <td></td>
+          </tr>
+          <tr>
+            <td>Smart shopping lists</td>
+            <td class="check">✓</td>
+            <td class="check">✓</td>
+            <td class="check">✓</td>
+          </tr>
+          <tr>
+            <td>Pantry inventory</td>
+            <td>Basic</td>
+            <td>Full</td>
+            <td>Full</td>
+          </tr>
+          <tr>
+            <td>Expiration tracking</td>
+            <td>-</td>
+            <td class="check">✓</td>
+            <td class="check">✓</td>
+          </tr>
+          <tr>
+            <td>Barcode scanning</td>
+            <td>-</td>
+            <td class="check">✓</td>
+            <td class="check">✓</td>
+          </tr>
+          
+          <tr class="feature-category">
+            <td>Integrations</td>
+            <td></td>
+            <td></td>
+            <td></td>
+          </tr>
+          <tr>
+            <td>Grocery delivery services</td>
+            <td>-</td>
+            <td>3 services</td>
+            <td>All services</td>
+          </tr>
+          <tr>
+            <td>Recipe import</td>
+            <td>Manual</td>
+            <td>Automatic</td>
+            <td>Automatic</td>
+          </tr>
+          <tr>
+            <td>Smart kitchen devices</td>
+            <td>-</td>
+            <td>Limited</td>
+            <td>Full</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+  
+  <!-- Testimonials Section -->
+  <section class="testimonials">
+    <div class="container">
+      <div class="testimonials-header">
+        <h2>Success Stories from Pantry Pal Users</h2>
+        <p>See how families and individuals are transforming their kitchen routines</p>
+      </div>
+      <div class="testimonials-grid">
+        <div class="testimonial">
+          <p class="testimonial-content">"I used to throw away at least $50 worth of food every month. With Pantry Pal tracking my inventory and suggesting recipes based on what I have, I've completely eliminated food waste!"</p>
+          <div class="testimonial-author">
+            <div class="author-avatar">
+              <img src="/api/placeholder/50/50" alt="Sarah T." />
+            </div>
+            <div class="author-info">
+              <h4>Sarah T.</h4>
+              <p>Single Professional</p>
+            </div>
+          </div>
+          <div class="result">Saved $600/year on groceries</div>
+        </div>
+        
+        <div class="testimonial">
+          <p class="testimonial-content">"As a family of five with different dietary needs, meal planning was a nightmare. Pantry Pal creates individual meal plans that everyone loves while using common ingredients to minimize waste."</p>
+          <div class="testimonial-author">
+            <div class="author-avatar">
+              <img src="/api/placeholder/50/50" alt="The Johnson Family" />
+            </div>
+            <div class="author-info">
+              <h4>The Johnson Family</h4>
+              <p>Busy household of 5</p>
+            </div>
+          </div>
+          <div class="result">Reduced cooking time by 35%</div>
+        </div>
+        
+        <div class="testimonial">
+          <p class="testimonial-content">"The barcode scanning feature makes inventory management effortless. I just scan groceries when I unpack, and Pantry Pal handles everything else. It even reminds me when things are about to expire!"</p>
+          <div class="testimonial-author">
+            <div class="author-avatar">
+              <img src="/api/placeholder/50/50" alt="Miguel R." />
+            </div>
+            <div class="author-info">
+              <h4>Miguel R.</h4>
+              <p>Busy Dad & Chef</p>
+            </div>
+          </div>
+          <div class="result">Cut food waste by 90%</div>
+        </div>
+      </div>
+    </div>
+  </section>
+  
+  <!-- Call To Value Section -->
+  <section class="ctv-section">
+    <div class="container">
+      <h2>Join 100,000+ Families Saving Time & Money on Groceries</h2>
+      <p>The average Pantry Pal user saves $120 per month on groceries and spends 5 fewer hours on meal planning and shopping.</p>
+      <a href="#try-free" class="btn ctv-btn">Transform Your Meal Planning Today</a>
+    </div>
+  </section>
+  
+  <!-- Closing the Deal Section -->
+  <section id="try-free" class="closing-section">
+    <div class="container">
+      <h2>Start Saving Time & Money Today!</h2>
+      <p>Get organized, reduce waste, and take the stress out of meal planning</p>
+      <p>Limited beta spots available for new users!</p>
+      <div class="closing-trust">
+        <div class="trust-item">
+          <span>✓</span>
+          <span>14-day free trial</span>
+        </div>
+        <div class="trust-item">
+          <span>✓</span>
+          <span>No credit card required</span>
+        </div>
+        <div class="trust-item">
+          <span>✓</span>
+          <span>Cancel anytime</span>
+        </div>
+      </div>
+      <a href="#" class="btn btn-primary btn-large">Start Saving Now</a>
+    </div>
+  </section>
+  
+  <!-- FAQ Section -->
+  <section id="faq" class="faq-section">
+    <div class="container">
+      <div class="faq-header">
+        <h2>Frequently Asked Questions</h2>
+        <p>Everything you need to know about Pantry Pal</p>
+      </div>
+      <div class="faq-grid">
+        <div class="faq-item">
+          <h4>How does the 14-day free trial work?</h4>
+          <p>Your free trial gives you full access to all Pro plan features for 14 days. No credit card required to start. If you choose to continue, you'll be asked to select a plan and enter payment details.</p>
+        </div>
+        
+        <div class="faq-item">
+          <h4>Can I change plans later?</h4>
+          <p>Yes! You can upgrade, downgrade, or cancel your plan at any time. Changes to your subscription take effect at the start of your next billing cycle.</p>
+        </div>
+        
+        <div class="faq-item">
+          <h4>How does Pantry Pal track my inventory?</h4>
+          <p>You can add items manually, scan receipts, or use our barcode scanner. The app tracks expiration dates and automatically updates your inventory as you use ingredients in your meals.</p>
+        </div>
+        
+        <div class="faq-item">
+          <h4>Which grocery delivery services do you integrate with?</h4>
+          <p>We currently integrate with Instacart, Amazon Fresh, Walmart Grocery, Kroger, Shipt, and several local services. New integrations are added regularly.</p>
+        </div>
+        
+        <div class="faq-item">
+          <h4>Can I share my account with family members?</h4>
+          <p>The Free and Pro plans support one user account. The Family plan allows

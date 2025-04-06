@@ -1,4 +1,4 @@
-import { API_CONFIG, getApiHeaders } from '@/config/api';
+import { API_CONFIG } from '@/lib/api-config';
 
 export interface Recipe {
   id: number;
@@ -44,6 +44,32 @@ export interface ExtendedIngredient extends Ingredient {
   aisle: string;
 }
 
+export interface AnalyzedInstruction {
+  name: string;
+  steps: {
+    number: number;
+    step: string;
+    ingredients: {
+      id: number;
+      name: string;
+      image: string;
+    }[];
+    equipment: {
+      id: number;
+      name: string;
+      image: string;
+      temperature?: {
+        number: number;
+        unit: string;
+      };
+    }[];
+    length?: {
+      number: number;
+      unit: string;
+    };
+  }[];
+}
+
 interface RecipeSearchOptions {
   number?: number;
   ranking?: number;
@@ -51,10 +77,20 @@ interface RecipeSearchOptions {
 }
 
 class RecipeService {
-  private baseUrl = API_CONFIG.SPOONACULAR_BASE_URL;
+  private baseUrl = 'https://api.spoonacular.com/recipes';
+  private apiKey = import.meta.env.VITE_SPOONACULAR_API_KEY;
+
+  private getHeaders() {
+    return {
+      'Content-Type': 'application/json',
+      'Accept': 'application/json',
+      'x-api-key': this.apiKey || '',
+    };
+  }
 
   async getRecipesByIngredients(ingredients: string[], options: RecipeSearchOptions = {}): Promise<Recipe[]> {
     const params = new URLSearchParams({
+      apiKey: this.apiKey || '',
       ingredients: ingredients.join(','),
       number: (options.number || 10).toString(),
       ranking: (options.ranking || 2).toString(),
@@ -63,8 +99,10 @@ class RecipeService {
     });
 
     const response = await fetch(
-      `${this.baseUrl}/recipes/findByIngredients?${params}`,
-      { headers: getApiHeaders().headers }
+      `${this.baseUrl}/findByIngredients?${params}`,
+      {
+        headers: this.getHeaders(),
+      }
     );
 
     if (!response.ok) {
@@ -75,9 +113,15 @@ class RecipeService {
   }
 
   async getRecipeDetails(id: number): Promise<RecipeDetail> {
+    const params = new URLSearchParams({
+      apiKey: this.apiKey || '',
+    });
+
     const response = await fetch(
-      `${this.baseUrl}/recipes/${id}/information`,
-      { headers: getApiHeaders().headers }
+      `${this.baseUrl}/${id}/information?${params}`,
+      {
+        headers: this.getHeaders(),
+      }
     );
 
     if (!response.ok) {
@@ -87,18 +131,41 @@ class RecipeService {
     return response.json();
   }
 
+  async getAnalyzedInstructions(id: number): Promise<AnalyzedInstruction[]> {
+    const params = new URLSearchParams({
+      apiKey: this.apiKey || '',
+      stepBreakdown: 'true',
+    });
+
+    const response = await fetch(
+      `${this.baseUrl}/${id}/analyzedInstructions?${params}`,
+      {
+        headers: this.getHeaders(),
+      }
+    );
+
+    if (!response.ok) {
+      throw new Error('Failed to fetch analyzed instructions');
+    }
+
+    return response.json();
+  }
+
   async getRecipesBulk(ids: number[]): Promise<RecipeDetail[]> {
     const params = new URLSearchParams({
+      apiKey: this.apiKey || '',
       ids: ids.join(','),
     });
 
     const response = await fetch(
-      `${this.baseUrl}/recipes/informationBulk?${params}`,
-      { headers: getApiHeaders().headers }
+      `${this.baseUrl}/informationBulk?${params}`,
+      {
+        headers: this.getHeaders(),
+      }
     );
 
     if (!response.ok) {
-      throw new Error('Failed to fetch recipes bulk');
+      throw new Error('Failed to fetch bulk recipes');
     }
 
     return response.json();
@@ -106,20 +173,22 @@ class RecipeService {
 
   async getRandomRecipes(number: number = 10): Promise<RecipeDetail[]> {
     const params = new URLSearchParams({
+      apiKey: this.apiKey || '',
       number: number.toString(),
     });
 
     const response = await fetch(
-      `${this.baseUrl}/recipes/random?${params}`,
-      { headers: getApiHeaders().headers }
+      `${this.baseUrl}/random?${params}`,
+      {
+        headers: this.getHeaders(),
+      }
     );
 
     if (!response.ok) {
       throw new Error('Failed to fetch random recipes');
     }
 
-    const data = await response.json();
-    return data.recipes;
+    return response.json();
   }
 }
 
