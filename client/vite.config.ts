@@ -8,6 +8,7 @@ export default defineConfig({
   resolve: {
     alias: {
       "@": path.resolve(__dirname, "./src"),
+      "@shared": path.resolve(__dirname, "../shared"),
     },
     dedupe: ['react', 'react-dom']
   },
@@ -63,6 +64,8 @@ export default defineConfig({
   build: {
     sourcemap: true,
     target: 'es2020',
+    outDir: 'dist',
+    emptyOutDir: true,
     commonjsOptions: {
       include: [/node_modules/],
       transformMixedEsModules: true

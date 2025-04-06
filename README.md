@@ -54,9 +54,9 @@ npm run build
 
 This project is licensed under the MIT License.
 
-🍽️ MealMatchr - Swipe Right on Dinner!
+🍽️ Pantry Pal - Swipe Right on Dinner!
 
-MealMatchr is a Tinder-like meal planning app that helps users discover meal ideas based on the ingredients they already have at home. With a fun swipe interface, users can match with recipes tailored to their pantry, dietary restrictions, and preferences. MealMatchr helps reduce food waste, inspire creativity in the kitchen, and make meal planning easy and enjoyable.
+Pantry Pal is a Tinder-like meal planning app that helps users discover meal ideas based on the ingredients they already have at home. With a fun swipe interface, users can match with recipes tailored to their pantry, dietary restrictions, and preferences. MealMatchr helps reduce food waste, inspire creativity in the kitchen, and make meal planning easy and enjoyable.
 
 📱 Features
 

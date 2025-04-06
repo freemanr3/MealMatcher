@@ -18,9 +18,10 @@
     "baseUrl": ".",
     "paths": {
       "@/*": ["src/*"],
-      "@shared/*": ["src/lib/*"]
-    }
+      "@shared/*": ["../shared/*"]
+    },
+    "types": ["vite/client"]
   },
-  "include": ["src"],
+  "include": ["src", "../shared"],
   "references": [{ "path": "./tsconfig.node.json" }]
 } 
