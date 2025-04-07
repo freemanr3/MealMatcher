@@ -1,4 +1,4 @@
-# MealMatcher
+# Pantry Pal
 
 A modern web application for matching meals and recipes.
 
