@@ -3,18 +3,7 @@ frontend:
   phases:
     preBuild:
       commands:
-        - npm ci
-    build:
-      commands:
-        - npm run build
-  artifacts:
-    baseDirectory: dist/public
-    files:
-      - '**/*'
-backend:
-  phases:
-    preBuild:
-      commands:
+        - cd client
         - npm ci
     build:
       commands:
@@ -23,3 +12,6 @@ backend:
     baseDirectory: dist
     files:
       - '**/*'
+  cache:
+    paths:
+      - node_modules/**/*
