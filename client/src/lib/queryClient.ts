@@ -1,5 +1,5 @@
 import { QueryClient, QueryFunction } from "@tanstack/react-query";
-import { API_URL } from './api-config';
+import { API_CONFIG, getFullUrl, getHeaders } from "@/config/api";
 
 async function throwIfResNotOk(res: Response) {
   if (!res.ok) {
@@ -13,13 +13,13 @@ export async function apiRequest(
   url: string,
   data?: unknown | undefined,
 ): Promise<Response> {
-  const fullUrl = url.startsWith('http') ? url : `${API_URL}${url}`;
+  const fullUrl = url.startsWith('http') ? url : getFullUrl(url);
 
   const res = await fetch(fullUrl, {
     method,
-    headers: data ? { "Content-Type": "application/json" } : {},
+    headers: data ? getHeaders('default') : {},
     body: data ? JSON.stringify(data) : undefined,
-    credentials: "include",
+    credentials: API_CONFIG.CREDENTIALS,
   });
 
   await throwIfResNotOk(res);
@@ -34,10 +34,11 @@ export const getQueryFn: <T>(options: {
   async ({ queryKey }) => {
     const url = (queryKey[0] as string).startsWith('http') 
       ? queryKey[0] as string
-      : `${API_URL}${queryKey[0]}`;
+      : getFullUrl(queryKey[0] as string);
 
     const res = await fetch(url, {
-      credentials: "include",
+      headers: getHeaders('default'),
+      credentials: API_CONFIG.CREDENTIALS,
     });
 
     if (unauthorizedBehavior === "returnNull" && res.status === 401) {
@@ -55,10 +56,12 @@ export const queryClient = new QueryClient({
       refetchInterval: false,
       refetchOnWindowFocus: false,
       staleTime: Infinity,
-      retry: false,
+      retry: API_CONFIG.RETRY.MAX_ATTEMPTS,
+      retryDelay: API_CONFIG.RETRY.DELAY,
     },
     mutations: {
-      retry: false,
+      retry: API_CONFIG.RETRY.MAX_ATTEMPTS,
+      retryDelay: API_CONFIG.RETRY.DELAY,
     },
   },
 });

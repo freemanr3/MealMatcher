@@ -1,30 +1,12 @@
-import { API_CONFIG } from '@/lib/api-config';
+import { API_ENDPOINTS, API_BASE_URLS, getHeaders, getFullUrl } from '@/config/api';
+import type { Recipe, Ingredient, ExtendedIngredient, AnalyzedInstruction } from '@shared/schema';
 
-export interface Recipe {
-  id: number;
-  title: string;
-  image: string;
-  imageType: string;
-  usedIngredientCount: number;
-  missedIngredientCount: number;
-  missedIngredients: Ingredient[];
-  usedIngredients: Ingredient[];
-  unusedIngredients: Ingredient[];
-  likes: number;
-}
+export type { Recipe, Ingredient, ExtendedIngredient, AnalyzedInstruction };
 
-export interface Ingredient {
-  id: number;
-  amount: number;
-  unit: string;
-  unitLong: string;
-  unitShort: string;
-  aisle: string;
-  name: string;
-  original: string;
-  originalName: string;
-  meta: string[];
-  image: string;
+export interface RecipeSearchOptions {
+  number?: number;
+  ranking?: number;
+  maxMissingIngredients?: number;
 }
 
 export interface RecipeDetail extends Recipe {
@@ -38,59 +20,9 @@ export interface RecipeDetail extends Recipe {
   extendedIngredients: ExtendedIngredient[];
 }
 
-export interface ExtendedIngredient extends Ingredient {
-  original: string;
-  originalName: string;
-  aisle: string;
-}
-
-export interface AnalyzedInstruction {
-  name: string;
-  steps: {
-    number: number;
-    step: string;
-    ingredients: {
-      id: number;
-      name: string;
-      image: string;
-    }[];
-    equipment: {
-      id: number;
-      name: string;
-      image: string;
-      temperature?: {
-        number: number;
-        unit: string;
-      };
-    }[];
-    length?: {
-      number: number;
-      unit: string;
-    };
-  }[];
-}
-
-interface RecipeSearchOptions {
-  number?: number;
-  ranking?: number;
-  maxMissingIngredients?: number;
-}
-
 class RecipeService {
-  private baseUrl = 'https://api.spoonacular.com/recipes';
-  private apiKey = import.meta.env.VITE_SPOONACULAR_API_KEY;
-
-  private getHeaders() {
-    return {
-      'Content-Type': 'application/json',
-      'Accept': 'application/json',
-      'x-api-key': this.apiKey || '',
-    };
-  }
-
   async getRecipesByIngredients(ingredients: string[], options: RecipeSearchOptions = {}): Promise<Recipe[]> {
     const params = new URLSearchParams({
-      apiKey: this.apiKey || '',
       ingredients: ingredients.join(','),
       number: (options.number || 10).toString(),
       ranking: (options.ranking || 2).toString(),
@@ -98,12 +30,14 @@ class RecipeService {
       ...(options.maxMissingIngredients && { limitLicense: options.maxMissingIngredients.toString() }),
     });
 
-    const response = await fetch(
-      `${this.baseUrl}/findByIngredients?${params}`,
-      {
-        headers: this.getHeaders(),
-      }
+    const url = getFullUrl(
+      `${API_ENDPOINTS.RECIPES.SPOONACULAR.SEARCH_BY_INGREDIENTS}?${params}`,
+      API_BASE_URLS.SPOONACULAR
     );
+
+    const response = await fetch(url, {
+      headers: getHeaders('spoonacular'),
+    });
 
     if (!response.ok) {
       throw new Error('Failed to fetch recipes');
@@ -113,16 +47,14 @@ class RecipeService {
   }
 
   async getRecipeDetails(id: number): Promise<RecipeDetail> {
-    const params = new URLSearchParams({
-      apiKey: this.apiKey || '',
-    });
-
-    const response = await fetch(
-      `${this.baseUrl}/${id}/information?${params}`,
-      {
-        headers: this.getHeaders(),
-      }
+    const url = getFullUrl(
+      API_ENDPOINTS.RECIPES.SPOONACULAR.RECIPE_DETAILS(id),
+      API_BASE_URLS.SPOONACULAR
     );
+
+    const response = await fetch(url, {
+      headers: getHeaders('spoonacular'),
+    });
 
     if (!response.ok) {
       throw new Error('Failed to fetch recipe details');
@@ -132,20 +64,17 @@ class RecipeService {
   }
 
   async getAnalyzedInstructions(id: number): Promise<AnalyzedInstruction[]> {
-    const params = new URLSearchParams({
-      apiKey: this.apiKey || '',
-      stepBreakdown: 'true',
-    });
-
-    const response = await fetch(
-      `${this.baseUrl}/${id}/analyzedInstructions?${params}`,
-      {
-        headers: this.getHeaders(),
-      }
+    const url = getFullUrl(
+      API_ENDPOINTS.RECIPES.SPOONACULAR.ANALYZED_INSTRUCTIONS(id),
+      API_BASE_URLS.SPOONACULAR
     );
 
+    const response = await fetch(url, {
+      headers: getHeaders('spoonacular'),
+    });
+
     if (!response.ok) {
-      throw new Error('Failed to fetch analyzed instructions');
+      throw new Error('Failed to fetch recipe instructions');
     }
 
     return response.json();
@@ -153,19 +82,20 @@ class RecipeService {
 
   async getRecipesBulk(ids: number[]): Promise<RecipeDetail[]> {
     const params = new URLSearchParams({
-      apiKey: this.apiKey || '',
       ids: ids.join(','),
     });
 
-    const response = await fetch(
-      `${this.baseUrl}/informationBulk?${params}`,
-      {
-        headers: this.getHeaders(),
-      }
+    const url = getFullUrl(
+      `${API_ENDPOINTS.RECIPES.SPOONACULAR.BULK_INFORMATION}?${params}`,
+      API_BASE_URLS.SPOONACULAR
     );
 
+    const response = await fetch(url, {
+      headers: getHeaders('spoonacular'),
+    });
+
     if (!response.ok) {
-      throw new Error('Failed to fetch bulk recipes');
+      throw new Error('Failed to fetch recipes in bulk');
     }
 
     return response.json();
@@ -173,22 +103,56 @@ class RecipeService {
 
   async getRandomRecipes(number: number = 10): Promise<RecipeDetail[]> {
     const params = new URLSearchParams({
-      apiKey: this.apiKey || '',
       number: number.toString(),
+      tags: 'main course',
     });
 
-    const response = await fetch(
-      `${this.baseUrl}/random?${params}`,
-      {
-        headers: this.getHeaders(),
-      }
+    const url = getFullUrl(
+      `${API_ENDPOINTS.RECIPES.SPOONACULAR.RANDOM}?${params}`,
+      API_BASE_URLS.SPOONACULAR
     );
+
+    const response = await fetch(url, {
+      headers: getHeaders('spoonacular'),
+    });
 
     if (!response.ok) {
       throw new Error('Failed to fetch random recipes');
     }
 
+    return response.json().recipes;
+  }
+
+  // Backend API methods
+  async saveRecipe(recipe: Recipe): Promise<Recipe> {
+    const url = getFullUrl(API_ENDPOINTS.RECIPES.BACKEND.SAVE);
+
+    const response = await fetch(url, {
+      method: 'POST',
+      headers: getHeaders('default'),
+      body: JSON.stringify(recipe),
+      credentials: 'include',
+    });
+
+    if (!response.ok) {
+      throw new Error('Failed to save recipe');
+    }
+
     return response.json();
+  }
+
+  async deleteRecipe(id: number): Promise<void> {
+    const url = getFullUrl(API_ENDPOINTS.RECIPES.BACKEND.DELETE(id));
+
+    const response = await fetch(url, {
+      method: 'DELETE',
+      headers: getHeaders('default'),
+      credentials: 'include',
+    });
+
+    if (!response.ok) {
+      throw new Error('Failed to delete recipe');
+    }
   }
 }
 
