@@ -5,7 +5,7 @@ import { ArrowLeft } from "lucide-react";
 import { Link } from "wouter";
 import { BudgetTracker } from "@/components/budget-tracker";
 import type { Recipe } from "@/lib/types";
-import type { MealPlanWithRecipe } from "@shared/schema";
+import type { MealPlanWithRecipe } from "@shared/client-schema";
 
 const MealPlanner = () => {
   const { data: mealPlansWithRecipes = [], isLoading } = useQuery<MealPlanWithRecipe[]>({
