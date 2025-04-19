@@ -3,7 +3,7 @@ import { useState } from "react";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Clock, DollarSign } from "lucide-react";
-import type { Recipe } from "@shared/schema";
+import type { Recipe } from "@/lib/types";
 
 interface MealCardProps {
   recipe: Recipe;
@@ -33,13 +33,13 @@ export function MealCard({ recipe, onSwipe }: MealCardProps) {
       <Card className="overflow-hidden">
         <div className="relative h-64">
           <img
-            src={recipe.imageUrl}
-            alt={recipe.name}
+            src={recipe.image}
+            alt={recipe.title}
             className="w-full h-full object-cover"
           />
         </div>
         <CardHeader className="p-4">
-          <h3 className="text-xl font-bold">{recipe.name}</h3>
+          <h3 className="text-xl font-bold">{recipe.title}</h3>
           <div className="flex gap-2 items-center text-sm text-muted-foreground">
             <Clock className="w-4 h-4" />
             <span>{recipe.cookingTime} mins</span>

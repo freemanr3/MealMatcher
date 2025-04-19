@@ -1,25 +1,14 @@
 /// <reference types="../vite-env.d.ts" />
+import { ENV } from '@/config/env';
 
-const getApiUrl = () => {
-  if (import.meta.env.VITE_API_URL) {
-    return import.meta.env.VITE_API_URL;
-  }
-  
-  // Default to current origin in production, localhost in development
-  const baseUrl = import.meta.env.DEV 
-    ? 'http://localhost:5000'
-    : window.location.origin;
-
-  return `${baseUrl}/api`;
-};
-
-export const API_URL = getApiUrl();
+// Use the centralized environment configuration
+export const API_URL = `${ENV.API_URL}/api`;
 
 export const API_CONFIG = {
   headers: {
     'Content-Type': 'application/json',
     'Accept': 'application/json',
-    'x-api-key': import.meta.env.VITE_SPOONACULAR_API_KEY || '',
+    'x-api-key': ENV.SPOONACULAR_API_KEY,
   },
   credentials: 'include' as RequestCredentials,
 };

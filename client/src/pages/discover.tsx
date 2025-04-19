@@ -34,17 +34,46 @@ export default function DiscoverPage() {
     },
   });
 
-  const handleSaveRecipe = (recipe: RecipeDetail) => {
-    // TODO: Implement save recipe functionality
-    console.log('Saving recipe:', recipe);
+  const handleLike = (recipeId: number) => {
+    // Update saved recipes list
+    const newSavedRecipes = [...savedRecipes];
+    if (newSavedRecipes.includes(recipeId)) {
+      const index = newSavedRecipes.indexOf(recipeId);
+      newSavedRecipes.splice(index, 1);
+    } else {
+      newSavedRecipes.push(recipeId);
+    }
+    setSavedRecipes(newSavedRecipes);
+    localStorage.setItem('savedRecipes', JSON.stringify(newSavedRecipes));
+    
+    // Find the recipe and save it
+    const recipe = recipes?.find(r => r.id === recipeId);
+    if (recipe) {
+      recipeService.saveRecipe(recipe)
+        .then(() => {
+          toast({
+            title: "Recipe saved",
+            description: `${recipe.title} has been saved to your favorites`,
+          });
+        })
+        .catch(() => {
+          toast({
+            title: "Error",
+            description: "Failed to save recipe",
+            variant: "destructive",
+          });
+        });
+    }
   };
 
-  const handleSwipe = (direction: 'left' | 'right') => {
-    if (direction === 'right') {
-      handleSaveRecipe(recipes[currentIndex]);
-    }
-    // Move to next recipe
-    setCurrentIndex((prev) => (prev + 1) % (recipes?.length || 0));
+  const handleViewDetails = (recipeId: number) => {
+    setLocation(`/recipes/${recipeId}`);
+  };
+
+  const handleCarouselChange = (event: React.SyntheticEvent<HTMLDivElement>) => {
+    // Get the current index from the carousel
+    // This will need to be handled differently since we can't get the index directly
+    // For now, we'll keep track of it ourselves
   };
 
   useEffect(() => {
@@ -92,7 +121,6 @@ export default function DiscoverPage() {
               align: "start",
               loop: true,
             }}
-            onSelect={(index) => setCurrentIndex(index)}
           >
             <CarouselContent>
               {recipes?.map((recipe: RecipeDetail, index: number) => (
@@ -101,9 +129,8 @@ export default function DiscoverPage() {
                     <Card className="overflow-hidden">
                       <RecipeCard 
                         recipe={recipe}
-                        onSave={() => handleSaveRecipe(recipe)}
-                        isSaved={savedRecipes.includes(recipe.id)}
-                        onSwipe={handleSwipe}
+                        onLike={handleLike}
+                        onViewDetails={handleViewDetails}
                       />
                     </Card>
                   </div>

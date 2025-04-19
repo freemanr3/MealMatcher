@@ -4,7 +4,8 @@ import { Button } from "@/components/ui/button";
 import { ArrowLeft } from "lucide-react";
 import { Link } from "wouter";
 import { BudgetTracker } from "@/components/budget-tracker";
-import type { MealPlan, Recipe } from "@shared/schema";
+import type { Recipe } from "@/lib/types";
+import type { MealPlan } from "@shared/schema";
 
 interface MealPlanWithRecipe extends MealPlan {
   recipe?: Recipe;
@@ -39,6 +40,10 @@ const MealPlanner = () => {
     recipe: recipes.find(r => r.id === plan.recipeId)
   }));
 
+  // Assuming user has a budget of 100 for demo purposes
+  // In a real app, this would come from user settings
+  const userBudget = 100;
+
   return (
     <div className="container mx-auto p-4">
       <div className="flex items-center mb-6">
@@ -50,7 +55,7 @@ const MealPlanner = () => {
         <h1 className="text-2xl font-bold ml-4">Meal Planner</h1>
       </div>
 
-      <BudgetTracker totalSpent={totalSpent} />
+      <BudgetTracker budget={userBudget} spent={totalSpent} />
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mt-6">
         {mealPlansWithRecipes.map((plan) => {
@@ -59,7 +64,7 @@ const MealPlanner = () => {
           return (
             <Card key={plan.id}>
               <CardHeader>
-                <CardTitle>{plan.recipe.name}</CardTitle>
+                <CardTitle>{plan.recipe.title}</CardTitle>
               </CardHeader>
               <CardContent>
                 <p className="text-sm text-muted-foreground">
