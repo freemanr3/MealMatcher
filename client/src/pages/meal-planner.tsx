@@ -5,14 +5,10 @@ import { ArrowLeft } from "lucide-react";
 import { Link } from "wouter";
 import { BudgetTracker } from "@/components/budget-tracker";
 import type { Recipe } from "@/lib/types";
-import type { MealPlan } from "@shared/schema";
-
-interface MealPlanWithRecipe extends MealPlan {
-  recipe?: Recipe;
-}
+import type { MealPlanWithRecipe } from "@shared/schema";
 
 const MealPlanner = () => {
-  const { data: mealPlans = [] } = useQuery<MealPlan[]>({
+  const { data: mealPlansWithRecipes = [], isLoading } = useQuery<MealPlanWithRecipe[]>({
     queryKey: ["mealplans"],
     queryFn: async () => {
       const response = await fetch("/api/mealplans/1"); // TODO: Get userId from auth
@@ -21,28 +17,19 @@ const MealPlanner = () => {
     }
   });
 
-  const { data: recipes = [] } = useQuery<Recipe[]>({
-    queryKey: ["recipes"],
-    queryFn: async () => {
-      const response = await fetch("/api/recipes");
-      if (!response.ok) throw new Error("Failed to fetch recipes");
-      return response.json();
-    }
-  });
-
-  const totalSpent = mealPlans.reduce((acc, plan) => {
-    const recipe = recipes.find((r) => r.id === plan.recipeId);
-    return acc + (recipe?.estimatedCost || 0);
-  }, 0);
-
-  const mealPlansWithRecipes: MealPlanWithRecipe[] = mealPlans.map(plan => ({
-    ...plan,
-    recipe: recipes.find(r => r.id === plan.recipeId)
-  }));
+  // Calculate total spent from meal plans
+  const totalSpent = mealPlansWithRecipes.reduce(
+    (acc, plan) => acc + (plan.recipe?.estimatedCost || 0), 
+    0
+  );
 
   // Assuming user has a budget of 100 for demo purposes
   // In a real app, this would come from user settings
   const userBudget = 100;
+
+  if (isLoading) {
+    return <div>Loading meal plans...</div>;
+  }
 
   return (
     <div className="container mx-auto p-4">
@@ -58,25 +45,21 @@ const MealPlanner = () => {
       <BudgetTracker budget={userBudget} spent={totalSpent} />
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mt-6">
-        {mealPlansWithRecipes.map((plan) => {
-          if (!plan.recipe) return null;
-
-          return (
-            <Card key={plan.id}>
-              <CardHeader>
-                <CardTitle>{plan.recipe.title}</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="text-sm text-muted-foreground">
-                  Planned for: {new Date(plan.plannedDate).toLocaleDateString()}
-                </p>
-                <p className="text-sm text-muted-foreground">
-                  Estimated cost: ${plan.recipe.estimatedCost}
-                </p>
-              </CardContent>
-            </Card>
-          );
-        })}
+        {mealPlansWithRecipes.map((plan) => (
+          <Card key={plan.id}>
+            <CardHeader>
+              <CardTitle>{plan.recipe.title}</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-sm text-muted-foreground">
+                Planned for: {new Date(plan.plannedDate).toLocaleDateString()}
+              </p>
+              <p className="text-sm text-muted-foreground">
+                Estimated cost: ${plan.recipe.estimatedCost}
+              </p>
+            </CardContent>
+          </Card>
+        ))}
       </div>
     </div>
   );
