@@ -19,7 +19,7 @@ const MealPlanner = () => {
 
   // Calculate total spent from meal plans
   const totalSpent = mealPlansWithRecipes.reduce(
-    (acc, plan) => acc + (plan.recipe?.estimatedCost || 0), 
+    (acc, plan) => acc + plan.recipe.estimatedCost, 
     0
   );
 
