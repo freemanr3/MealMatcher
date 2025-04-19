@@ -1,4 +1,4 @@
-import { User, Recipe, MealPlan, InsertUser, type DietaryPreference } from "@shared/schema";
+import { User, Recipe, MealPlan, InsertUser, type DietaryPreference, MealPlanWithRecipe } from "@shared/schema";
 import { mockRecipes } from "@shared/mock-data";
 
 export interface IStorage {
@@ -15,6 +15,7 @@ export interface IStorage {
 
   // Meal plan operations
   getMealPlans(userId: number): Promise<MealPlan[]>;
+  getMealPlansWithRecipes(userId: number): Promise<MealPlanWithRecipe[]>;
   addMealPlan(userId: number, recipeId: number, date: string): Promise<MealPlan>;
 }
 
@@ -93,6 +94,23 @@ export class MemStorage implements IStorage {
   async getMealPlans(userId: number): Promise<MealPlan[]> {
     return Array.from(this.mealPlans.values())
       .filter(plan => plan.userId === userId);
+  }
+
+  async getMealPlansWithRecipes(userId: number): Promise<MealPlanWithRecipe[]> {
+    const mealPlans = await this.getMealPlans(userId);
+    const mealPlansWithRecipes: MealPlanWithRecipe[] = [];
+    
+    for (const plan of mealPlans) {
+      const recipe = await this.getRecipeById(plan.recipeId);
+      if (recipe) {
+        mealPlansWithRecipes.push({
+          ...plan,
+          recipe
+        });
+      }
+    }
+    
+    return mealPlansWithRecipes;
   }
 
   async addMealPlan(userId: number, recipeId: number, date: string): Promise<MealPlan> {

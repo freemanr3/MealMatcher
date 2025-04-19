@@ -67,8 +67,8 @@ export async function registerRoutes(app: Express) {
 
   // Meal plan routes
   app.get("/api/mealplans/:userId", async (req, res) => {
-    const mealPlans = await storage.getMealPlans(Number(req.params.userId));
-    res.json(mealPlans);
+    const mealPlansWithRecipes = await storage.getMealPlansWithRecipes(Number(req.params.userId));
+    res.json(mealPlansWithRecipes);
   });
 
   app.post("/api/mealplans", async (req, res) => {

@@ -62,7 +62,9 @@ export type User = typeof users.$inferSelect;
 export type InsertUser = z.infer<typeof insertUserSchema>;
 export type Recipe = typeof recipes.$inferSelect;
 export type MealPlan = typeof mealPlans.$inferSelect;
-
+export interface MealPlanWithRecipe extends MealPlan {
+  recipe: Recipe;
+}
 // Additional types for the client
 export const ingredientSchema = z.object({
   id: z.number(),
