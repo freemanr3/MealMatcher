@@ -1,4 +1,4 @@
-import type { AnalyzedInstruction, DietaryPreference as SharedDietaryPreference } from '@shared/client-schema';
+import type { AnalyzedInstruction, DietaryPreference as SharedDietaryPreference } from '@/shared/client-schema';
 
 export interface Recipe {
   id: number;

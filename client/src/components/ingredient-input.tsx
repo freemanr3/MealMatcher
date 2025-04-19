@@ -2,7 +2,7 @@ import { useState, KeyboardEvent } from 'react';
 import { X } from 'lucide-react';
 import { Button } from './ui/button';
 import { Input } from './ui/input';
-import { ingredientsList } from "@shared/mock-data";
+import { ingredientsList } from "@/shared/mock-data";
 
 interface IngredientInputProps {
   onIngredientsChange: (ingredients: string[]) => void;

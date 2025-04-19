@@ -1,5 +1,5 @@
 import { API_ENDPOINTS, API_BASE_URLS, getHeaders, getFullUrl } from '@/config/api';
-import type { AnalyzedInstruction, ExtendedIngredient, Ingredient } from '@shared/client-schema';
+import type { AnalyzedInstruction, ExtendedIngredient, Ingredient } from '@/shared/client-schema';
 import type { Recipe, SpoonacularRecipe } from '@/lib/types';
 
 // Re-export Recipe type for components to use
