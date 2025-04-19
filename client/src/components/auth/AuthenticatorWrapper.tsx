@@ -13,13 +13,13 @@ export const AuthenticatorWrapper: React.FC<AuthenticatorWrapperProps> = ({ chil
   const [, navigate] = useLocation();
   const [location] = useLocation();
 
-  // Custom form fields - only include email/phone for sign-in and sign-up
+  // Custom form fields - only include email for sign-in and sign-up
   const formFields = {
     signIn: {
       username: {
-        placeholder: 'Email or phone number',
+        placeholder: 'Email',
         isRequired: true,
-        label: 'Email or Phone Number',
+        label: 'Email',
       },
       password: {
         isRequired: true,
@@ -27,9 +27,9 @@ export const AuthenticatorWrapper: React.FC<AuthenticatorWrapperProps> = ({ chil
     },
     signUp: {
       username: {
-        placeholder: 'Email or phone number',
+        placeholder: 'Email',
         isRequired: true,
-        label: 'Email or Phone Number',
+        label: 'Email',
       },
       password: {
         isRequired: true,
@@ -41,7 +41,7 @@ export const AuthenticatorWrapper: React.FC<AuthenticatorWrapperProps> = ({ chil
     confirmSignUp: {
       confirmation_code: {
         label: 'Verification Code',
-        placeholder: 'Enter the code sent to your email or phone',
+        placeholder: 'Enter the code sent to your email',
         isRequired: true,
       },
     },
@@ -68,7 +68,7 @@ export const AuthenticatorWrapper: React.FC<AuthenticatorWrapperProps> = ({ chil
     },
   };
 
-  // For now, we'll use a simple post-sign-in function
+  // Function to handle successful sign-in
   const handleSuccess = () => {
     navigate('/paywall');
     return Promise.resolve();
@@ -78,9 +78,12 @@ export const AuthenticatorWrapper: React.FC<AuthenticatorWrapperProps> = ({ chil
     <Authenticator
       formFields={formFields}
       components={components}
-      loginMechanisms={['email', 'phone_number']}
+      loginMechanisms={['email']}
       hideSignUp={false}
       variation="modal"
+      services={{
+        handleSignIn: handleSuccess
+      }}
     >
       {children}
     </Authenticator>

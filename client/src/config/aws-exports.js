@@ -2,19 +2,19 @@ const awsExports = {
   Auth: {
     // Replace these with your actual values from Amplify Console after setup
     region: 'us-east-1',
-    userPoolId: 'REPLACE_WITH_USER_POOL_ID',
-    userPoolWebClientId: 'REPLACE_WITH_USER_POOL_CLIENT_ID',
-    mandatorySignIn: false,
+    userPoolId: process.env.REACT_APP_USER_POOL_ID || import.meta.env.VITE_USER_POOL_ID || 'AMPLIFY_CONFIGURED_USER_POOL_ID',
+    userPoolWebClientId: process.env.REACT_APP_USER_POOL_CLIENT_ID || import.meta.env.VITE_USER_POOL_CLIENT_ID || 'AMPLIFY_CONFIGURED_CLIENT_ID',
+    mandatorySignIn: true,
     authenticationFlowType: 'USER_SRP_AUTH',
-    signUpAttributes: ['email', 'phone_number'],
-    usernameAttributes: ['email', 'phone_number'],
+    signUpAttributes: ['email'],
+    usernameAttributes: ['email'],
     mfaConfiguration: 'OPTIONAL',
-    mfaTypes: ['SMS'],
+    mfaTypes: ['TOTP'],
     passwordProtectionSettings: {
       passwordPolicyMinLength: 8,
       passwordPolicyCharacters: []
     },
-    verificationMechanisms: ['EMAIL', 'PHONE_NUMBER']
+    verificationMechanisms: ['EMAIL']
   }
 };
 

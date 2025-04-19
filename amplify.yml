@@ -4,9 +4,10 @@ frontend:
     preBuild:
       commands:
         - cd client
-        - npm install --legacy-peer-deps
+        - npm install
     build:
       commands:
+        - cd client
         - npm run build
   artifacts:
     baseDirectory: client/dist
@@ -15,4 +16,3 @@ frontend:
   cache:
     paths:
       - client/node_modules/**/*
-      - client/dist/**/*
