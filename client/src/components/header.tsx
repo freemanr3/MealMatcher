@@ -10,12 +10,16 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { User, Settings, LogOut } from "lucide-react";
-import { useAuth } from '@/hooks/useAuth';
+import { useAuth } from '@/components/auth/AuthenticatorWrapper';
 
 export function Header() {
   const [location] = useLocation();
-  const isAuthPage = location === "/";
-  const { user, logout } = useAuth();
+  const isAuthPage = location === "/auth";
+  const { isAuthenticated, user, signOut } = useAuth();
+
+  const handleSignOut = () => {
+    signOut();
+  };
 
   return (
     <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
@@ -28,12 +32,16 @@ export function Header() {
             <Link href="/discover" className="transition-colors hover:text-foreground/80 text-foreground/60">
               Discover
             </Link>
-            <Link href="/ingredients" className="transition-colors hover:text-foreground/80 text-foreground/60">
-              Ingredients
-            </Link>
-            <Link href="/meal-planner" className="transition-colors hover:text-foreground/80 text-foreground/60">
-              Meal Planner
-            </Link>
+            {isAuthenticated && (
+              <>
+                <Link href="/ingredients" className="transition-colors hover:text-foreground/80 text-foreground/60">
+                  My Pantry
+                </Link>
+                <Link href="/meal-planner" className="transition-colors hover:text-foreground/80 text-foreground/60">
+                  Meal Planner
+                </Link>
+              </>
+            )}
             <Link href="/pricing" className="transition-colors hover:text-foreground/80 text-foreground/60">
               Pricing
             </Link>
@@ -44,10 +52,29 @@ export function Header() {
             {/* Search bar can be added here if needed */}
           </div>
           <nav className="flex items-center">
-            {user ? (
-              <Button variant="ghost" onClick={logout}>
-                Logout
-              </Button>
+            {isAuthenticated ? (
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="ghost" className="relative h-8 w-8 rounded-full">
+                    <User className="h-4 w-4" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent className="w-56" align="end" forceMount>
+                  <DropdownMenuLabel className="font-normal">
+                    <div className="flex flex-col space-y-1">
+                      <p className="text-sm font-medium leading-none">{user?.username || 'User'}</p>
+                      <p className="text-xs leading-none text-muted-foreground">
+                        {user?.attributes?.email || ''}
+                      </p>
+                    </div>
+                  </DropdownMenuLabel>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem onClick={handleSignOut}>
+                    <LogOut className="mr-2 h-4 w-4" />
+                    <span>Log out</span>
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
             ) : (
               <Link href="/auth">
                 <Button>Login</Button>
