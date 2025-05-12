@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useLocation } from 'wouter';
-import { useStripeElements, useStripe, PaymentElement, AddressElement } from '@stripe/react-stripe-js';
+import { useElements, useStripe, PaymentElement, AddressElement } from '@stripe/react-stripe-js';
 import { useAuth } from '@/hooks/useAuth';
 import { createSubscription } from '@/services/stripe';
 import { useStripe as useStripeContext } from '@/lib/stripe';
@@ -13,7 +13,7 @@ const CheckoutPage: React.FC = () => {
   const { setClientSecret } = useStripeContext();
   
   const stripe = useStripe();
-  const elements = useStripeElements();
+  const elements = useElements();
   
   const [isLoading, setIsLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
