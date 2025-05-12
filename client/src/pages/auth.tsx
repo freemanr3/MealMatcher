@@ -1,29 +1,34 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useLocation } from 'wouter';
-import { View } from '@aws-amplify/ui-react';
-import { AuthenticatorWrapper, useAuth } from '@/components/auth/AuthenticatorWrapper';
+import { useAuth } from '@/hooks/useAuth';
 
 const AuthPage: React.FC = () => {
-  const { isAuthenticated } = useAuth();
+  const { user } = useAuth();
   const [, navigate] = useLocation();
 
-  React.useEffect(() => {
-    // If user is already authenticated, redirect to home
-    if (isAuthenticated) {
-      navigate('/');
+  useEffect(() => {
+    // If user is authenticated
+    if (user) {
+      // Check if user is new and redirect to checkout
+      if (user.isNewUser) {
+        navigate('/checkout');
+      } else {
+        // Otherwise redirect to home
+        navigate('/');
+      }
     }
-  }, [isAuthenticated, navigate]);
+  }, [user, navigate]);
 
   return (
-    <View width="100%" padding={{ base: '1rem', large: '2rem' }}>
-      <AuthenticatorWrapper>
-        {/* This content won't show during the auth flow */}
-        <View>
-          {/* Redirect will happen in useEffect */}
-          <p>Authentication successful. Redirecting...</p>
-        </View>
-      </AuthenticatorWrapper>
-    </View>
+    <div className="container mx-auto py-8 px-4">
+      <div className="max-w-md mx-auto bg-white rounded-lg shadow-md p-6">
+        <h1 className="text-2xl font-bold mb-6">Sign In</h1>
+        {/* Auth form would be here */}
+        <p className="text-center text-muted-foreground text-sm mt-4">
+          {user ? 'Authentication successful. Redirecting...' : 'Please sign in to continue.'}
+        </p>
+      </div>
+    </div>
   );
 };
 

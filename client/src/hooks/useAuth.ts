@@ -4,6 +4,7 @@ interface User {
   id: string;
   email: string;
   name: string;
+  isNewUser?: boolean;
 }
 
 export function useAuth() {
@@ -69,12 +70,27 @@ export function useAuth() {
       }
 
       const userData = await response.json();
-      localStorage.setItem('user', JSON.stringify(userData));
-      setUser(userData);
-      return userData;
+      
+      // Mark user as new for the checkout flow
+      const userWithNewFlag = {
+        ...userData,
+        isNewUser: true
+      };
+      
+      localStorage.setItem('user', JSON.stringify(userWithNewFlag));
+      setUser(userWithNewFlag);
+      return userWithNewFlag;
     } catch (error) {
       console.error('Signup error:', error);
       throw error;
+    }
+  };
+
+  const markUserAsExisting = () => {
+    if (user) {
+      const updatedUser = { ...user, isNewUser: false };
+      localStorage.setItem('user', JSON.stringify(updatedUser));
+      setUser(updatedUser);
     }
   };
 
@@ -84,5 +100,6 @@ export function useAuth() {
     login,
     logout,
     signup,
+    markUserAsExisting,
   };
 } 
