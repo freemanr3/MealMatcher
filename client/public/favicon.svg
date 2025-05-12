@@ -1,6 +1,29 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
-  <path d="M16 4L18 28" stroke="#f97316" stroke-width="2" stroke-linecap="round"/>
-  <path d="M12 8V12M12 16V12M14 12H10" stroke="#f97316" stroke-width="2" stroke-linecap="round"/>
-  <path d="M20 8C20 8 22 10 22 14C22 18 20 20 20 20" stroke="#f97316" stroke-width="2" stroke-linecap="round"/>
+<svg width="100" height="100" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+  <rect width="100" height="100" fill="#E9B382" />
+  <path d="M30,10 L70,10 Q90,10 90,30 L90,50 Q90,70 70,70 L50,70 L50,90 L30,90 Z" fill="#F5EFD7" stroke="#3A3A28" stroke-width="3" />
+  
+  <!-- Food containers in the P -->
+  <!-- Top left section -->
+  <rect x="35" y="15" width="20" height="20" fill="#5D4037" rx="2" ry="2" />
+  <rect x="38" y="18" width="5" height="12" fill="#607D8B" />
+  <rect x="45" y="18" width="7" height="10" fill="#D84315" />
+  
+  <!-- Top right section -->
+  <rect x="60" y="15" width="20" height="20" fill="#5D4037" rx="2" ry="2" />
+  <rect x="63" y="18" width="7" height="12" fill="#FFC107" />
+  <rect x="72" y="18" width="5" height="10" fill="#D84315" />
+  
+  <!-- Middle left section -->
+  <rect x="35" y="40" width="20" height="20" fill="#5D4037" rx="2" ry="2" />
+  <rect x="38" y="43" width="14" height="14" fill="#D84315" rx="2" ry="2" />
+  
+  <!-- Middle right section -->
+  <path d="M60,40 L80,40 L80,60 L60,60 Z" fill="#5D4037" />
+  <path d="M63,43 L77,43 L77,57 L63,57 Z" fill="#E64A19" />
+  
+  <!-- Bottom sections -->
+  <rect x="35" y="65" width="20" height="20" fill="#5D4037" rx="2" ry="2" />
+  <path d="M42,70 L48,70 L45,75 L48,80 L42,80 L45,75 Z" fill="#F5EFD7" />
+  <rect x="50" y="70" width="5" height="10" fill="#607D8B" />
 </svg> 
