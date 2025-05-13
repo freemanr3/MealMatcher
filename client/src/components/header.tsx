@@ -1,6 +1,7 @@
-import { Link } from "wouter";
-import { Button } from "@/components/ui/button";
-import { useLocation } from "wouter";
+import { Link, useLocation } from 'wouter';
+import { motion } from 'framer-motion';
+import { Menu, X, ShoppingCart, User, Search, Home } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -8,52 +9,149 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { User, Settings, LogOut } from "lucide-react";
-import { useAuth } from '@/hooks/useAuth';
+} from '@/components/ui/dropdown-menu';
+import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
+import { BudgetTracker } from '@/components/budget-tracker';
+import { useAuth } from '@/context/AuthContext';
+import { useMealPlan } from '@/hooks/use-meal-plan';
+
+const links = [
+  { href: '/', label: 'Home', icon: Home },
+  { href: '/meal-planner', label: 'Meal Plan', icon: ShoppingCart },
+  { href: '/preferences', label: 'My Pantry', icon: Search },
+];
 
 export function Header() {
   const [location] = useLocation();
-  const isAuthPage = location === "/";
   const { user, logout } = useAuth();
+  const { mealPlan } = useMealPlan();
+  
+  const handleLogout = async () => {
+    await logout();
+  };
 
   return (
-    <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-      <div className="container flex h-14 items-center">
-        <div className="mr-4 hidden md:flex">
-          <Link href="/" className="mr-6 flex items-center space-x-2">
-            <span className="hidden font-bold sm:inline-block">Pantry Pal</span>
+    <header className="sticky top-0 z-40 w-full border-b bg-background/95 backdrop-blur">
+      <div className="container flex h-16 items-center justify-between">
+        <div className="flex items-center gap-6 md:gap-8">
+          <Link href="/" className="flex items-center space-x-2">
+            <motion.span 
+              className="hidden font-bold sm:inline-block text-xl"
+              initial={{ opacity: 0, x: -10 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ delay: 0.2 }}
+            >
+              Pantry Pal
+            </motion.span>
           </Link>
-          <nav className="flex items-center space-x-6 text-sm font-medium">
-            <Link href="/discover" className="transition-colors hover:text-foreground/80 text-foreground/60">
-              Discover
-            </Link>
-            <Link href="/ingredients" className="transition-colors hover:text-foreground/80 text-foreground/60">
-              Ingredients
-            </Link>
-            <Link href="/meal-planner" className="transition-colors hover:text-foreground/80 text-foreground/60">
-              Meal Planner
-            </Link>
-            <Link href="/pricing" className="transition-colors hover:text-foreground/80 text-foreground/60">
-              Pricing
-            </Link>
+          
+          <nav className="hidden md:flex gap-6">
+            {links.map((link) => {
+              const Icon = link.icon;
+              const isActive = location === link.href;
+              
+              return (
+                <Link
+                  key={link.href}
+                  href={link.href}
+                  className={`text-sm font-medium transition-colors ${
+                    isActive
+                      ? 'text-foreground'
+                      : 'text-muted-foreground hover:text-foreground'
+                  }`}
+                >
+                  <div className="flex items-center gap-1">
+                    <Icon className="h-4 w-4" />
+                    <span>{link.label}</span>
+                    {link.href === '/meal-planner' && mealPlan.length > 0 && (
+                      <span className="ml-1 rounded-full bg-primary w-5 h-5 flex items-center justify-center text-xs text-primary-foreground">
+                        {mealPlan.length}
+                      </span>
+                    )}
+                  </div>
+                </Link>
+              );
+            })}
           </nav>
         </div>
-        <div className="flex flex-1 items-center justify-between space-x-2 md:justify-end">
-          <div className="w-full flex-1 md:w-auto md:flex-none">
-            {/* Search bar can be added here if needed */}
-          </div>
-          <nav className="flex items-center">
-            {user ? (
-              <Button variant="ghost" onClick={logout}>
-                Logout
+        
+        {/* Budget Tracker - Visible only on desktop */}
+        <div className="hidden xl:flex items-center gap-4">
+          <BudgetTracker variant="compact" />
+        </div>
+
+        <div className="flex items-center gap-2">
+          {user ? (
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" size="icon" className="rounded-full">
+                  <User className="h-5 w-5" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <DropdownMenuLabel>
+                  <div className="flex flex-col">
+                    <span>{user.name}</span>
+                    <span className="text-xs text-muted-foreground">{user.email}</span>
+                  </div>
+                </DropdownMenuLabel>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem onClick={handleLogout}>
+                  Logout
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          ) : (
+            <Button asChild variant="default" size="sm">
+              <Link href="/auth">Sign in</Link>
+            </Button>
+          )}
+
+          <Sheet>
+            <SheetTrigger asChild>
+              <Button variant="ghost" size="icon" className="md:hidden">
+                <Menu className="h-5 w-5" />
+                <span className="sr-only">Toggle menu</span>
               </Button>
-            ) : (
-              <Link href="/auth">
-                <Button>Login</Button>
-              </Link>
-            )}
-          </nav>
+            </SheetTrigger>
+            <SheetContent side="left">
+              <div className="flex flex-col gap-6 px-2">
+                <Link href="/" className="flex items-center py-2">
+                  <span className="font-bold text-xl">Pantry Pal</span>
+                </Link>
+                
+                {/* Mobile Budget Tracker */}
+                <BudgetTracker variant="default" className="mb-2" />
+                
+                <nav className="flex flex-col gap-3">
+                  {links.map((link) => {
+                    const Icon = link.icon;
+                    const isActive = location === link.href;
+                    
+                    return (
+                      <Link
+                        key={link.href}
+                        href={link.href}
+                        className={`flex items-center gap-3 px-3 py-2 text-sm font-medium rounded-md transition-colors ${
+                          isActive
+                            ? 'bg-accent text-accent-foreground'
+                            : 'hover:bg-accent hover:text-accent-foreground'
+                        }`}
+                      >
+                        <Icon className="h-4 w-4" />
+                        <span>{link.label}</span>
+                        {link.href === '/meal-planner' && mealPlan.length > 0 && (
+                          <span className="ml-auto rounded-full bg-primary w-5 h-5 flex items-center justify-center text-xs text-primary-foreground">
+                            {mealPlan.length}
+                          </span>
+                        )}
+                      </Link>
+                    );
+                  })}
+                </nav>
+              </div>
+            </SheetContent>
+          </Sheet>
         </div>
       </div>
     </header>
