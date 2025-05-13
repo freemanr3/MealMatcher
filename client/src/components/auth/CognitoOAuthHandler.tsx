@@ -7,7 +7,15 @@ import { Hub } from 'aws-amplify/utils';
  * This component handles the OAuth callback from Cognito
  * It processes the authorization code and exchanges it for tokens
  */
-const CognitoOAuthHandler: React.FC = () => {
+
+// Define props type
+type CognitoOAuthHandlerProps = {
+  params?: {
+    [key: string]: string | undefined;
+  };
+};
+
+const CognitoOAuthHandler: React.FC<CognitoOAuthHandlerProps> = ({ params }) => {
   const [, setLocation] = useLocation();
   const [error, setError] = useState<string | null>(null);
   const [processing, setProcessing] = useState(true);

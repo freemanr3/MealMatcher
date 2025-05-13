@@ -8,7 +8,14 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/components/ui/use-toast";
 import { useAuth } from '@/context/AuthContext';
 
-export default function AuthPage() {
+// Define props type
+type AuthPageProps = {
+  params?: {
+    [key: string]: string | undefined;
+  };
+};
+
+export default function AuthPage({ params }: AuthPageProps) {
   const [, setLocation] = useLocation();
   const { toast } = useToast();
   const { login, signup, confirmAccount } = useAuth();

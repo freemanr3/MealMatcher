@@ -1,3 +1,4 @@
+import React from 'react';
 import { Link } from 'wouter';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -8,10 +9,19 @@ import { recipeService } from '@/services/recipeService';
 import { RecipeDetail } from '@/types/recipe';
 import { useState } from 'react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { useLocation } from 'wouter';
 
-export default function HomePage() {
+// Define props type
+type HomePageProps = {
+  params?: {
+    [key: string]: string | undefined;
+  };
+};
+
+export default function HomePage({ params }: HomePageProps) {
   const { user } = useAuth();
   const [currentIndex, setCurrentIndex] = useState(0);
+  const [, setLocation] = useLocation();
 
   const { data: recipes, isLoading } = useQuery({
     queryKey: ['randomRecipes'],

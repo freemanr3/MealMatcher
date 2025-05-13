@@ -14,7 +14,14 @@ import { RecipeCard } from '@/components/recipe-card';
 import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/components/ui/use-toast';
 
-export default function MealPlanner() {
+// Define props type
+type MealPlannerProps = {
+  params?: {
+    [key: string]: string | undefined;
+  };
+};
+
+export default function MealPlanner({ params }: MealPlannerProps) {
   const [, setLocation] = useLocation();
   const [activeTab, setActiveTab] = useState('saved');
   const { toast } = useToast();

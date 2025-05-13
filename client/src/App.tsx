@@ -14,8 +14,22 @@ import RecipeDetail from '@/pages/recipe-detail';
 import { useAuth } from '@/context/AuthContext';
 import { AuthProvider } from '@/context/AuthContext';
 import CognitoOAuthHandler from '@/components/auth/CognitoOAuthHandler';
+import React from 'react';
 
-function ProtectedRoute({ component: Component, ...rest }) {
+// Define proper types for route components and props
+type RouteComponentProps = {
+  params?: {
+    id?: string;
+    [key: string]: string | undefined;
+  };
+};
+
+type ProtectedRouteProps = {
+  component: React.ComponentType<RouteComponentProps>;
+  params?: RouteComponentProps['params'];
+};
+
+function ProtectedRoute({ component: Component, params }: ProtectedRouteProps) {
   const { user } = useAuth();
   const [, setLocation] = useLocation();
 
@@ -24,7 +38,7 @@ function ProtectedRoute({ component: Component, ...rest }) {
     return null;
   }
 
-  return <Component {...rest} />;
+  return <Component params={params} />;
 }
 
 function Router() {
@@ -34,30 +48,50 @@ function Router() {
   
   return (
     <Switch>
-      <Route path="/auth" component={(props) => {
-        // If user is already logged in, redirect to discover page
-        if (user) {
-          setLocation('/discover');
-          return null;
-        }
-        return <AuthPage {...props} />;
-      }} />
-      <Route path="/oauth/callback" component={CognitoOAuthHandler} />
-      <Route path="/pricing" component={PricingPage} />
-      <Route path="/" component={(props) => {
-        // Redirect root path to discover for authenticated users
-        if (user) {
-          setLocation('/discover');
-          return null;
-        }
-        return <ProtectedRoute component={HomePage} {...props} />;
-      }} />
-      <Route path="/discover" component={(props) => <ProtectedRoute component={DiscoverPage} {...props} />} />
-      <Route path="/ingredients" component={(props) => <ProtectedRoute component={IngredientsPage} {...props} />} />
-      <Route path="/preferences" component={(props) => <ProtectedRoute component={IngredientsPage} {...props} />} />
-      <Route path="/meal-planner" component={(props) => <ProtectedRoute component={MealPlanner} {...props} />} />
-      <Route path="/recipes/:id" component={(props) => <ProtectedRoute component={RecipeDetail} {...props} />} />
-      <Route component={NotFound} />
+      <Route path="/auth">
+        {(params) => {
+          // If user is already logged in, redirect to discover page
+          if (user) {
+            setLocation('/discover');
+            return null;
+          }
+          return <AuthPage params={params} />;
+        }}
+      </Route>
+      <Route path="/oauth/callback">
+        {(params) => <CognitoOAuthHandler params={params} />}
+      </Route>
+      <Route path="/pricing">
+        {(params) => <PricingPage params={params} />}
+      </Route>
+      <Route path="/">
+        {(params) => {
+          // Redirect root path to discover for authenticated users
+          if (user) {
+            setLocation('/discover');
+            return null;
+          }
+          return <HomePage params={params} />;
+        }}
+      </Route>
+      <Route path="/discover">
+        {(params) => <ProtectedRoute component={DiscoverPage} params={params} />}
+      </Route>
+      <Route path="/ingredients">
+        {(params) => <ProtectedRoute component={IngredientsPage} params={params} />}
+      </Route>
+      <Route path="/preferences">
+        {(params) => <ProtectedRoute component={IngredientsPage} params={params} />}
+      </Route>
+      <Route path="/meal-planner">
+        {(params) => <ProtectedRoute component={MealPlanner} params={params} />}
+      </Route>
+      <Route path="/recipes/:id">
+        {(params) => <ProtectedRoute component={RecipeDetail} params={params} />}
+      </Route>
+      <Route>
+        {(params) => <NotFound params={params} />}
+      </Route>
     </Switch>
   );
 }

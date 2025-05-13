@@ -17,7 +17,14 @@ import { useMealPlan } from '@/hooks/use-meal-plan';
 // Define dietary preference type
 type DietaryPreference = 'vegetarian' | 'vegan' | 'gluten-free' | 'dairy-free' | 'low-carb' | 'keto' | 'paleo';
 
-export default function DiscoverPage() {
+// Define props type
+type DiscoverPageProps = {
+  params?: {
+    [key: string]: string | undefined;
+  };
+};
+
+export default function DiscoverPage({ params }: DiscoverPageProps) {
   const { toast } = useToast();
   const [savedRecipes, setSavedRecipes] = useState<number[]>([]);
   const [, setLocation] = useLocation();

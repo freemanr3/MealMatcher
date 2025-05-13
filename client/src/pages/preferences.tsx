@@ -84,7 +84,14 @@ const getCategoryIcon = (ingredient: string) => {
   return <Coffee className="h-4 w-4 text-stone-500" />;
 };
 
-export function IngredientsPage() {
+// Define props type
+type IngredientsPageProps = {
+  params?: {
+    [key: string]: string | undefined;
+  };
+};
+
+export function IngredientsPage({ params }: IngredientsPageProps) {
   const { toast } = useToast();
   const [, setLocation] = useLocation();
   const [ingredients, setIngredients] = useState<Ingredient[]>([]);
