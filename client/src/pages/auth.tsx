@@ -6,43 +6,142 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/components/ui/use-toast";
+import { useAuth } from '@/context/AuthContext';
 
 export default function AuthPage() {
   const [, setLocation] = useLocation();
   const { toast } = useToast();
+  const { login, signup, confirmAccount } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
+  
+  // State for form inputs
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [name, setName] = useState("");
+  
+  // State for confirmation
+  const [showConfirmation, setShowConfirmation] = useState(false);
+  const [confirmationCode, setConfirmationCode] = useState("");
+  const [signupEmail, setSignupEmail] = useState("");
 
   const handleLogin = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setIsLoading(true);
     
-    // TODO: Implement actual login logic
-    await new Promise(resolve => setTimeout(resolve, 1000)); // Simulated delay
-    
-    toast({
-      title: "Welcome back!",
-      description: "Successfully logged in to your account.",
-    });
-    
-    setIsLoading(false);
-    setLocation("/discover");
+    try {
+      await login(email, password);
+      
+      toast({
+        title: "Welcome back!",
+        description: "Successfully logged in to your account.",
+      });
+      
+      setLocation("/discover");
+    } catch (error) {
+      console.error("Login error:", error);
+      toast({
+        title: "Login failed",
+        description: error instanceof Error ? error.message : "Failed to log in. Please check your credentials.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const handleSignup = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setIsLoading(true);
     
-    // TODO: Implement actual signup logic
-    await new Promise(resolve => setTimeout(resolve, 1000)); // Simulated delay
-    
-    toast({
-      title: "Welcome to Pantry Pal!",
-      description: "Your account has been created successfully.",
-    });
-    
-    setIsLoading(false);
-    setLocation("/discover");
+    try {
+      const signupResult = await signup(email, password, name);
+      
+      // If user needs confirmation
+      if (!signupResult.userConfirmed) {
+        setSignupEmail(email);
+        setShowConfirmation(true);
+        toast({
+          title: "Verification needed",
+          description: "Please check your email for a verification code and enter it below.",
+        });
+      } else {
+        toast({
+          title: "Welcome to Pantry Pal!",
+          description: "Your account has been created successfully.",
+        });
+        setLocation("/discover");
+      }
+    } catch (error) {
+      console.error("Signup error:", error);
+      toast({
+        title: "Signup failed",
+        description: error instanceof Error ? error.message : "Failed to create account. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
+    }
   };
+
+  const handleConfirmation = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    setIsLoading(true);
+    
+    try {
+      await confirmAccount(signupEmail, confirmationCode);
+      
+      toast({
+        title: "Account verified!",
+        description: "Your account has been verified successfully. You can now log in.",
+      });
+      
+      // Reset states and show login tab
+      setShowConfirmation(false);
+      setConfirmationCode("");
+    } catch (error) {
+      console.error("Confirmation error:", error);
+      toast({
+        title: "Verification failed",
+        description: error instanceof Error ? error.message : "Failed to verify account. Please check the code and try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // If showing confirmation screen
+  if (showConfirmation) {
+    return (
+      <div className="min-h-screen bg-gradient-to-b from-orange-50 to-white flex items-center justify-center p-4">
+        <Card className="w-full max-w-md">
+          <CardHeader className="text-center">
+            <CardTitle className="text-3xl font-bold text-orange-600">Verify Your Account</CardTitle>
+            <CardDescription>
+              Please enter the verification code sent to your email
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <form onSubmit={handleConfirmation} className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="confirmation-code">Verification Code</Label>
+                <Input 
+                  id="confirmation-code" 
+                  value={confirmationCode}
+                  onChange={(e) => setConfirmationCode(e.target.value)}
+                  placeholder="Enter verification code" 
+                  required 
+                />
+              </div>
+              <Button type="submit" className="w-full" disabled={isLoading}>
+                {isLoading ? "Verifying..." : "Verify Account"}
+              </Button>
+            </form>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-orange-50 to-white flex items-center justify-center p-4">
@@ -64,11 +163,25 @@ export default function AuthPage() {
               <form onSubmit={handleLogin} className="space-y-4">
                 <div className="space-y-2">
                   <Label htmlFor="email">Email</Label>
-                  <Input id="email" type="email" placeholder="Enter your email" required />
+                  <Input 
+                    id="email" 
+                    type="email" 
+                    placeholder="Enter your email" 
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    required 
+                  />
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="password">Password</Label>
-                  <Input id="password" type="password" placeholder="Enter your password" required />
+                  <Input 
+                    id="password" 
+                    type="password" 
+                    placeholder="Enter your password" 
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    required 
+                  />
                 </div>
                 <Button type="submit" className="w-full" disabled={isLoading}>
                   {isLoading ? "Logging in..." : "Login"}
@@ -80,15 +193,35 @@ export default function AuthPage() {
               <form onSubmit={handleSignup} className="space-y-4">
                 <div className="space-y-2">
                   <Label htmlFor="name">Full Name</Label>
-                  <Input id="name" placeholder="Enter your name" required />
+                  <Input 
+                    id="name" 
+                    placeholder="Enter your name" 
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
+                    required 
+                  />
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="signup-email">Email</Label>
-                  <Input id="signup-email" type="email" placeholder="Enter your email" required />
+                  <Input 
+                    id="signup-email" 
+                    type="email" 
+                    placeholder="Enter your email" 
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    required 
+                  />
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="signup-password">Password</Label>
-                  <Input id="signup-password" type="password" placeholder="Create a password" required />
+                  <Input 
+                    id="signup-password" 
+                    type="password" 
+                    placeholder="Create a password" 
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    required 
+                  />
                 </div>
                 <Button type="submit" className="w-full" disabled={isLoading}>
                   {isLoading ? "Creating account..." : "Create Account"}
