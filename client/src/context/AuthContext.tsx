@@ -78,8 +78,10 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   // Signup function
   const signup = async (email: string, password: string, name: string) => {
     try {
+      // Generate a unique username (not an email)
+      const generatedUsername = `user_${Date.now()}`;
       const { isSignUpComplete, userId, nextStep } = await signUp({
-        username: email,
+        username: generatedUsername,
         password,
         options: {
           userAttributes: {
