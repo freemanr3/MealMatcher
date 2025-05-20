@@ -24,12 +24,12 @@ export default function AuthPage({ params }: AuthPageProps) {
   // State for form inputs
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [name, setName] = useState("");
+  const [username, setUsername] = useState("");
   
   // State for confirmation
   const [showConfirmation, setShowConfirmation] = useState(false);
   const [confirmationCode, setConfirmationCode] = useState("");
-  const [signupEmail, setSignupEmail] = useState("");
+  const [signupUsername, setSignupUsername] = useState("");
 
   const handleLogin = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -61,11 +61,11 @@ export default function AuthPage({ params }: AuthPageProps) {
     setIsLoading(true);
     
     try {
-      const signupResult = await signup(email, password, name);
+      const signupResult = await signup(username, email, password);
       
       // If user needs confirmation
       if (!signupResult.userConfirmed) {
-        setSignupEmail(email);
+        setSignupUsername(signupResult.username);
         setShowConfirmation(true);
         toast({
           title: "Verification needed",
@@ -95,16 +95,18 @@ export default function AuthPage({ params }: AuthPageProps) {
     setIsLoading(true);
     
     try {
-      await confirmAccount(signupEmail, confirmationCode);
+      await confirmAccount(signupUsername, confirmationCode);
+      
+      // After successful confirmation, automatically sign in the user
+      await login(email, password);
       
       toast({
         title: "Account verified!",
-        description: "Your account has been verified successfully. You can now log in.",
+        description: "Your account has been verified and you are now signed in.",
       });
       
-      // Reset states and show login tab
-      setShowConfirmation(false);
-      setConfirmationCode("");
+      // Redirect to discover page
+      setLocation("/discover");
     } catch (error) {
       console.error("Confirmation error:", error);
       toast({
@@ -199,12 +201,12 @@ export default function AuthPage({ params }: AuthPageProps) {
             <TabsContent value="signup">
               <form onSubmit={handleSignup} className="space-y-4">
                 <div className="space-y-2">
-                  <Label htmlFor="name">Full Name</Label>
+                  <Label htmlFor="username">Username</Label>
                   <Input 
-                    id="name" 
-                    placeholder="Enter your name" 
-                    value={name}
-                    onChange={(e) => setName(e.target.value)}
+                    id="username" 
+                    placeholder="Choose a username" 
+                    value={username}
+                    onChange={(e) => setUsername(e.target.value)}
                     required 
                   />
                 </div>

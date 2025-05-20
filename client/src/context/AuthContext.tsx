@@ -6,6 +6,7 @@ interface User {
   id: string;
   email: string;
   name: string;
+  username: string;
 }
 
 // Auth context type definition
@@ -13,15 +14,15 @@ interface AuthContextType {
   user: User | null;
   loading: boolean;
   login: (email: string, password: string) => Promise<User>;
-  signup: (email: string, password: string, name: string) => Promise<{ userConfirmed: boolean; userSub: string }>;
-  confirmAccount: (email: string, code: string) => Promise<void>;
+  signup: (username: string, email: string, password: string) => Promise<{ userConfirmed: boolean; userSub: string; username: string }>;
+  confirmAccount: (username: string, code: string) => Promise<void>;
   logout: () => Promise<void>;
 }
 
 // Create the context
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-// Provider component
+// Props for the AuthProvider component
 interface AuthProviderProps {
   children: ReactNode;
 }
@@ -40,7 +41,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         setUser({
           id: currentUser.userId,
           email: attributes.email || '',
-          name: attributes.name || ''
+          name: attributes.name || '',
+          username: currentUser.username
         });
       } catch (error) {
         // No user is signed in
@@ -64,7 +66,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       const userData: User = {
         id: currentUser.userId,
         email: attributes.email || '',
-        name: attributes.name || ''
+        name: attributes.name || '',
+        username: currentUser.username
       };
 
       setUser(userData);
@@ -76,24 +79,23 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   };
 
   // Signup function
-  const signup = async (email: string, password: string, name: string) => {
+  const signup = async (username: string, email: string, password: string) => {
     try {
-      // Generate a unique username (not an email)
-      const generatedUsername = `user_${Date.now()}`;
       const { isSignUpComplete, userId, nextStep } = await signUp({
-        username: generatedUsername,
+        username,
         password,
         options: {
           userAttributes: {
             email,
-            name,
+            name: username
           },
         },
       });
 
       return { 
         userConfirmed: isSignUpComplete, 
-        userSub: userId 
+        userSub: userId,
+        username
       };
     } catch (error) {
       console.error('Signup error:', error);
@@ -102,10 +104,10 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   };
 
   // Confirm signup function
-  const confirmAccount = async (email: string, code: string): Promise<void> => {
+  const confirmAccount = async (username: string, code: string): Promise<void> => {
     try {
       await confirmSignUp({
-        username: email,
+        username,
         confirmationCode: code
       });
     } catch (error) {
@@ -143,7 +145,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 };
 
 // Custom hook to use the auth context
-export const useAuth = (): AuthContextType => {
+export const useAuth = () => {
   const context = useContext(AuthContext);
   if (context === undefined) {
     throw new Error('useAuth must be used within an AuthProvider');
