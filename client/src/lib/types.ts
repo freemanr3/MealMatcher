@@ -14,6 +14,8 @@ export interface Recipe {
   likes: number;
   servings: number;
   readyInMinutes: number;
+  preparationMinutes?: number;
+  cookingMinutes?: number;
   instructions: string;
   summary: string;
   cuisines: string[];
@@ -40,6 +42,8 @@ export interface SpoonacularRecipe {
   summary?: string;
   servings?: number;
   readyInMinutes?: number;
+  preparationMinutes?: number;
+  cookingMinutes?: number;
   cuisines?: string[];
   dishTypes?: string[];
   diets?: string[];

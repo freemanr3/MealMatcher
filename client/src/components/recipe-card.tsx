@@ -1,9 +1,9 @@
-import { useCallback } from "react";
+import { useCallback, useMemo, memo } from "react";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
-import { Clock, DollarSign, Heart, Users, Flame, Egg, Wheat } from "lucide-react";
+import { Clock, DollarSign, Heart, Users, Flame, Egg, Wheat, Info, ChefHat } from "lucide-react";
 import { Separator } from "@/components/ui/separator";
 import DOMPurify from "dompurify";
 import type { Recipe } from "@/lib/types";
@@ -13,9 +13,11 @@ interface RecipeCardProps {
   onLike?: (recipeId: number) => void;
   onViewDetails?: (recipeId: number) => void;
   onClick?: () => void;
+  isLiked?: boolean;
+  className?: string;
 }
 
-// Helper function to strip HTML tags completely
+// Memoized helper function to strip HTML tags
 const stripHtml = (html: string): string => {
   if (!html) return '';
   try {
@@ -27,209 +29,258 @@ const stripHtml = (html: string): string => {
   }
 };
 
-// Helper function to extract first paragraph of text
+// Memoized function to get first paragraph
 const getFirstParagraph = (text: string): string => {
   if (!text) return '';
   try {
-    const cleaned = text.replace(/<br\s*\/?>/gi, ' '); // Replace <br> tags with spaces
-    const paragraph = cleaned.split(/\n|<\/p>|<\/div>/)[0]; // Get first paragraph
-    return paragraph.length > 200 ? `${paragraph.substring(0, 200)}...` : paragraph;
+    const cleaned = text.replace(/<br\s*\/?>/gi, ' ');
+    const paragraph = cleaned.split(/\n|<\/p>|<\/div>/)[0];
+    return paragraph.length > 150 ? `${paragraph.substring(0, 150)}...` : paragraph;
   } catch (error) {
     console.error("Error getting paragraph:", error);
     return '';
   }
 };
 
-export function RecipeCard({ recipe, onLike, onViewDetails, onClick }: RecipeCardProps) {
-  // Ensure recipe has required properties
+// Memoized image component to prevent unnecessary re-renders
+const RecipeImage = memo(({ src, alt, title }: { src: string; alt: string; title: string }) => (
+  <div className="relative h-48 sm:h-56 md:h-64 lg:h-72 w-full overflow-hidden bg-gray-100">
+    <img
+      src={src}
+      alt={alt}
+      title={title}
+      className="object-cover w-full h-full transition-transform duration-300 hover:scale-105"
+      loading="lazy"
+      decoding="async"
+      onError={(e) => {
+        const target = e.currentTarget;
+        if (target.src !== 'https://placehold.co/600x400?text=No+Image') {
+          target.src = 'https://placehold.co/600x400?text=No+Image';
+        }
+      }}
+    />
+    {/* Gradient overlay for better text readability */}
+    <div className="absolute inset-0 bg-gradient-to-t from-black/20 via-transparent to-transparent" />
+  </div>
+));
+
+RecipeImage.displayName = 'RecipeImage';
+
+// Memoized dietary badge component
+const DietaryBadge = memo(({ type, icon: Icon }: { type: string; icon: any }) => (
+  <Badge variant="secondary" className="bg-green-100 text-green-800 shadow-sm text-xs">
+    <Icon className="w-3 h-3 mr-1" />
+    {type}
+  </Badge>
+));
+
+DietaryBadge.displayName = 'DietaryBadge';
+
+// Memoized stat item component
+const StatItem = memo(({ icon: Icon, label, value, color, tooltip }: {
+  icon: any;
+  label: string;
+  value: string | React.ReactNode;
+  color: string;
+  tooltip?: string;
+}) => (
+  <div className="flex flex-col items-center text-center p-2" title={tooltip}>
+    <Icon className={`w-4 h-4 md:w-5 md:h-5 mb-1 ${color}`} />
+    <span className="text-xs text-muted-foreground font-medium leading-tight">{label}</span>
+    <span className="text-sm md:text-base font-bold mt-0.5">{value}</span>
+  </div>
+));
+
+StatItem.displayName = 'StatItem';
+
+const RecipeCard = memo(({ 
+  recipe, 
+  onLike, 
+  onViewDetails, 
+  onClick, 
+  isLiked = false,
+  className = ""
+}: RecipeCardProps) => {
+  // Early return for invalid recipe
   if (!recipe || typeof recipe !== 'object') {
     console.error("Invalid recipe object:", recipe);
     return null;
   }
 
-  // Sanitize HTML content
-  const sanitizeHtml = useCallback((htmlContent: string): string => {
-    if (!htmlContent) return '';
-    try {
-      return DOMPurify.sanitize(htmlContent, {
-        ALLOWED_TAGS: ['b', 'i', 'em', 'strong'],
-        ALLOWED_ATTR: []
-      });
-    } catch (error) {
-      console.error("Error sanitizing HTML:", error);
-      return '';
-    }
-  }, []);
+  // Memoize expensive calculations
+  const nutritionData = useMemo(() => ({
+    calories: Math.round((recipe.estimatedCost || 10) * 100),
+    protein: Math.round((recipe.estimatedCost || 5) * 5),
+  }), [recipe.estimatedCost]);
 
-  // Get cleaned description (either sanitized or stripped)
-  const getCleanDescription = (): string => {
+  const dietaryInfo = useMemo(() => {
+    const tags = recipe.dietaryTags || [];
+    return {
+      isGlutenFree: tags.includes('gluten-free'),
+      isVegan: tags.includes('vegan'),
+      isVegetarian: tags.includes('vegetarian'),
+    };
+  }, [recipe.dietaryTags]);
+
+  const cleanDescription = useMemo(() => {
     if (!recipe.summary) return '';
-    return stripHtml(recipe.summary);
-  };
+    return getFirstParagraph(stripHtml(recipe.summary));
+  }, [recipe.summary]);
 
-  // Calculate nutritional values (placeholder - would come from API)
-  const calories = Math.round((recipe.estimatedCost || 10) * 100);
-  const protein = Math.round((recipe.estimatedCost || 5) * 5);
-  
-  // Safely determine dietary tags
-  const dietaryTags = recipe.dietaryTags || [];
-  
-  // Determine if recipe has specific dietaryTags
-  const isGlutenFree = dietaryTags.includes('gluten-free');
-  const isVegan = dietaryTags.includes('vegan');
-  const isVegetarian = dietaryTags.includes('vegetarian');
+  const timeDisplay = useMemo(() => {
+    if (typeof recipe.readyInMinutes === 'number' && recipe.readyInMinutes > 0) {
+      return `${recipe.readyInMinutes}m`;
+    }
+    return '—';
+  }, [recipe.readyInMinutes]);
 
-  // Ensure recipe has required properties with fallbacks
-  const safeRecipe = {
+  // Memoize safe recipe data
+  const safeRecipe = useMemo(() => ({
     id: recipe.id || 0,
     title: recipe.title || 'Untitled Recipe',
     image: recipe.image || 'https://placehold.co/600x400?text=No+Image',
     cuisines: recipe.cuisines || [],
     dishTypes: recipe.dishTypes || [],
-    cookingTime: recipe.cookingTime || recipe.readyInMinutes || 30,
     servings: recipe.servings || 4,
     estimatedCost: recipe.estimatedCost || 10.99,
-    likes: recipe.likes || 0
-  };
+  }), [recipe.id, recipe.title, recipe.image, recipe.cuisines, recipe.dishTypes, recipe.servings, recipe.estimatedCost]);
+
+  // Memoized event handlers
+  const handleLike = useCallback((e: React.MouseEvent) => {
+    e.stopPropagation();
+    onLike?.(safeRecipe.id);
+  }, [onLike, safeRecipe.id]);
+
+  const handleViewDetails = useCallback((e: React.MouseEvent) => {
+    e.stopPropagation();
+    onViewDetails?.(safeRecipe.id);
+  }, [onViewDetails, safeRecipe.id]);
+
+  const handleCardClick = useCallback(() => {
+    onClick?.();
+  }, [onClick]);
 
   return (
     <Card 
-      className="w-full overflow-hidden flex flex-col rounded-xl h-full cursor-pointer"
-      onClick={onClick}
+      className={`w-full overflow-hidden flex flex-col rounded-xl h-full cursor-pointer transition-all duration-200 hover:shadow-xl hover:-translate-y-1 bg-white ${className}`}
+      onClick={handleCardClick}
     >
-      {/* Image section - spans full width, half height */}
-      <div className="relative h-60 sm:h-72 md:h-80 w-full overflow-hidden">
-        <img
+      {/* Image section */}
+      <div className="relative">
+        <RecipeImage 
           src={safeRecipe.image}
           alt={safeRecipe.title}
-          className="object-cover w-full h-full transition-transform hover:scale-105"
-          onError={(e) => {
-            e.currentTarget.src = 'https://placehold.co/600x400?text=No+Image';
-          }}
+          title={safeRecipe.title}
         />
         
-        {/* Key dietary markers overlay */}
-        <div className="absolute top-3 left-3 flex flex-wrap gap-1.5">
-          {isVegan && (
-            <Badge variant="secondary" className="bg-green-100 text-green-800 shadow-sm">
-              <Wheat className="w-3.5 h-3.5 mr-1.5" />Vegan
-            </Badge>
+        {/* Dietary markers overlay */}
+        <div className="absolute top-3 left-3 flex flex-wrap gap-1.5 max-w-[60%]">
+          {dietaryInfo.isVegan && (
+            <DietaryBadge type="Vegan" icon={Wheat} />
           )}
-          {isVegetarian && !isVegan && (
-            <Badge variant="secondary" className="bg-green-100 text-green-800 shadow-sm">
-              <Wheat className="w-3.5 h-3.5 mr-1.5" />Vegetarian
-            </Badge>
+          {dietaryInfo.isVegetarian && !dietaryInfo.isVegan && (
+            <DietaryBadge type="Vegetarian" icon={Wheat} />
           )}
-          {isGlutenFree && (
-            <Badge variant="secondary" className="bg-blue-100 text-blue-800 shadow-sm">
-              <Wheat className="w-3.5 h-3.5 mr-1.5" />Gluten-Free
-            </Badge>
+          {dietaryInfo.isGlutenFree && (
+            <DietaryBadge type="GF" icon={Wheat} />
           )}
         </div>
+
+        {/* Like button overlay */}
+        {onLike && (
+          <button
+            className="absolute top-3 right-3 p-2.5 bg-white/90 backdrop-blur-sm rounded-full shadow-lg hover:bg-white transition-all duration-200 hover:scale-110 touch-manipulation"
+            onClick={handleLike}
+            aria-label={isLiked ? "Unlike recipe" : "Like recipe"}
+          >
+            <Heart 
+              className={`w-5 h-5 ${isLiked ? 'fill-red-500 text-red-500' : 'text-gray-600'}`}
+            />
+          </button>
+        )}
       </div>
       
       {/* Content section */}
-      <div className="flex flex-col flex-grow p-4 md:p-5 gap-3">
+      <div className="flex flex-col flex-grow p-4 md:p-6 gap-4">
         {/* Title */}
-        <h2 className="text-2xl md:text-2.5xl font-bold leading-tight">{safeRecipe.title}</h2>
+        <h2 className="text-xl md:text-2xl font-bold leading-tight line-clamp-2 text-gray-900">
+          {safeRecipe.title}
+        </h2>
         
         {/* Cuisine & Type Tags */}
         <div className="flex flex-wrap gap-1.5">
-          {safeRecipe.cuisines.length > 0 && safeRecipe.cuisines.slice(0, 2).map((cuisine) => (
-            <Badge key={cuisine} variant="outline" className="text-sm md:text-base py-1 px-2.5">
+          {safeRecipe.cuisines.slice(0, 2).map((cuisine) => (
+            <Badge key={cuisine} variant="outline" className="text-xs md:text-sm py-1 px-2 bg-orange-50 text-orange-700 border-orange-200">
               {cuisine}
             </Badge>
           ))}
-          {safeRecipe.dishTypes?.length > 0 && safeRecipe.dishTypes.slice(0, 2).map((type) => (
-            <Badge key={type} variant="outline" className="text-sm md:text-base py-1 px-2.5">
+          {safeRecipe.dishTypes?.slice(0, 2).map((type) => (
+            <Badge key={type} variant="outline" className="text-xs md:text-sm py-1 px-2 bg-blue-50 text-blue-700 border-blue-200">
               {type}
             </Badge>
           ))}
         </div>
         
-        {/* Stats Row - evenly spaced */}
-        <div className="grid grid-cols-3 gap-2 my-1 py-2 border-y border-gray-100">
-          <div className="flex flex-col items-center" title="Preparation Time">
-            <Clock className="w-5 h-5 md:w-6 md:h-6 mb-1 text-orange-500" />
-            <span className="text-sm md:text-base font-medium">{safeRecipe.cookingTime} min</span>
-          </div>
-          <div className="flex flex-col items-center" title="Servings">
-            <Users className="w-5 h-5 md:w-6 md:h-6 mb-1 text-blue-500" />
-            <span className="text-sm md:text-base font-medium">{safeRecipe.servings}</span>
-          </div>
-          <div className="flex flex-col items-center" title="Estimated Cost">
-            <DollarSign className="w-5 h-5 md:w-6 md:h-6 mb-1 text-green-500" />
-            <span className="text-sm md:text-base font-medium">${safeRecipe.estimatedCost.toFixed(2)}</span>
-          </div>
+        {/* Stats Row */}
+        <div className="grid grid-cols-3 gap-1 py-3 border-y border-gray-100">
+          <StatItem
+            icon={Clock}
+            label="Time"
+            value={timeDisplay}
+            color="text-orange-500"
+            tooltip="Total cooking time"
+          />
+          <StatItem
+            icon={Users}
+            label="Serves"
+            value={safeRecipe.servings}
+            color="text-blue-500"
+            tooltip="Number of servings"
+          />
+          <StatItem
+            icon={DollarSign}
+            label="Cost"
+            value={`$${safeRecipe.estimatedCost.toFixed(0)}`}
+            color="text-green-500"
+            tooltip="Estimated cost per recipe"
+          />
         </div>
         
         {/* Nutrition info */}
-        <div className="grid grid-cols-2 gap-4">
-          <div className="flex items-center" title="Calories">
-            <Flame className="w-5 h-5 md:w-6 md:h-6 mr-2 text-red-500" />
-            <span className="text-sm md:text-base font-medium">{calories} cal</span>
+        <div className="grid grid-cols-2 gap-3">
+          <div className="flex items-center" title="Estimated calories">
+            <Flame className="w-4 h-4 mr-2 text-red-500" />
+            <span className="text-sm font-medium text-gray-700">{nutritionData.calories} cal</span>
           </div>
-          <div className="flex items-center" title="Protein">
-            <Egg className="w-5 h-5 md:w-6 md:h-6 mr-2 text-yellow-500" />
-            <span className="text-sm md:text-base font-medium">{protein}g protein</span>
+          <div className="flex items-center" title="Estimated protein">
+            <Egg className="w-4 h-4 mr-2 text-yellow-500" />
+            <span className="text-sm font-medium text-gray-700">{nutritionData.protein}g protein</span>
           </div>
         </div>
         
-        {/* Description - limited to 2 lines */}
-        <p className="text-sm md:text-base text-muted-foreground line-clamp-2 flex-grow">
-          {getCleanDescription()}
-        </p>
+        {/* Description */}
+        {cleanDescription && (
+          <p className="text-sm text-muted-foreground line-clamp-3 flex-grow leading-relaxed">
+            {cleanDescription}
+          </p>
+        )}
         
-        {/* Diet tags */}
-        {dietaryTags.filter(tag => tag !== 'gluten-free' && tag !== 'vegan' && tag !== 'vegetarian').length > 0 && (
-          <div className="flex flex-wrap gap-1.5 mt-1">
-            {dietaryTags
-              .filter(tag => tag !== 'gluten-free' && tag !== 'vegan' && tag !== 'vegetarian')
-              .slice(0, 3)
-              .map((tag) => (
-                <Badge key={tag} variant="secondary" className="text-sm">
-                  {tag}
-                </Badge>
-              ))}
-            {dietaryTags.filter(tag => tag !== 'gluten-free' && tag !== 'vegan' && tag !== 'vegetarian').length > 3 && (
-              <Badge variant="outline" className="text-sm">
-                +{dietaryTags.filter(tag => tag !== 'gluten-free' && tag !== 'vegan' && tag !== 'vegetarian').length - 3} more
-              </Badge>
-            )}
-          </div>
+        {/* Action button */}
+        {onViewDetails && (
+          <Button 
+            variant="default" 
+            className="w-full mt-auto bg-orange-600 hover:bg-orange-700 text-white font-medium py-3 touch-manipulation"
+            onClick={handleViewDetails}
+          >
+            <ChefHat className="w-4 h-4 mr-2" />
+            View Recipe
+          </Button>
         )}
       </div>
-      
-      {/* CTA Row */}
-      <CardFooter className="flex justify-between p-4 md:p-5 pt-0 mt-auto">
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={(e) => {
-            e.stopPropagation();
-            if (onLike && safeRecipe.id) {
-              onLike(safeRecipe.id);
-            }
-          }}
-          className="flex items-center gap-1.5"
-        >
-          <Heart className="w-5 h-5" />
-          <span className="font-medium">{safeRecipe.likes}</span>
-        </Button>
-        <Button
-          variant="default"
-          size="sm"
-          onClick={(e) => {
-            e.stopPropagation();
-            if (onViewDetails && safeRecipe.id) {
-              onViewDetails(safeRecipe.id);
-            }
-          }}
-          className="px-4 py-2 font-medium"
-        >
-          View Details
-        </Button>
-      </CardFooter>
     </Card>
   );
-} 
+});
+
+RecipeCard.displayName = 'RecipeCard';
+
+export { RecipeCard }; 

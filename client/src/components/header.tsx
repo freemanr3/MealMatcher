@@ -35,8 +35,13 @@ export function Header() {
       <div className="container flex h-16 items-center justify-between">
         <div className="flex items-center gap-6 md:gap-8">
           <Link href="/" className="flex items-center space-x-2">
+            <img 
+              src="/images/pantry-logo.svg" 
+              alt="PantryPal Logo" 
+              className="w-8 h-10"
+            />
             <motion.span 
-              className="hidden font-bold sm:inline-block text-xl"
+              className="hidden font-semibold sm:inline-block text-xl tracking-wide"
               initial={{ opacity: 0, x: -10 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ delay: 0.2 }}
@@ -116,8 +121,13 @@ export function Header() {
             </SheetTrigger>
             <SheetContent side="left">
               <div className="flex flex-col gap-6 px-2">
-                <Link href="/" className="flex items-center py-2">
-                  <span className="font-bold text-xl">Pantry Pal</span>
+                <Link href="/" className="flex items-center py-2 space-x-2">
+                  <img 
+                    src="/images/pantry-logo.svg" 
+                    alt="PantryPal Logo" 
+                    className="w-8 h-10"
+                  />
+                  <span className="font-semibold text-xl tracking-wide">Pantry Pal</span>
                 </Link>
                 
                 {/* Mobile Budget Tracker */}

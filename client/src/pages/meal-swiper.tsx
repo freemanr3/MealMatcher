@@ -51,7 +51,7 @@ export default function MealSwiper() {
   const { toast } = useToast();
   const [, setLocation] = useLocation();
   const { 
-    addToMealPlan, skipRecipe, isInMealPlan, isSkipped, 
+    addToMealPlan, skipRecipe, isInMealPlan, shouldShowSkippedRecipe, 
     budget, spent, budgetPercentage, remaining 
   } = useMealPlan();
   
@@ -82,7 +82,7 @@ export default function MealSwiper() {
         if (selectedTime > 0 && recipe.readyInMinutes > selectedTime) {
           return false;
         }
-        return true;
+        return shouldShowSkippedRecipe(recipe);
       });
     },
     enabled: hasIngredients,
@@ -444,7 +444,7 @@ export default function MealSwiper() {
                   </motion.div>
                 </motion.div>
 
-                <RecipeCard recipe={currentRecipe} />
+                <RecipeCard recipe={currentRecipe} onViewDetails={() => setLocation(`/recipe/${currentRecipe.id}`)} />
               </motion.div>
             )}
           </AnimatePresence>

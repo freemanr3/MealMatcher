@@ -46,7 +46,14 @@ export default function HomePage({ params }: HomePageProps) {
   return (
     <div className="container mx-auto p-4">
       <div className="text-center mb-12">
-        <h1 className="text-4xl font-bold mb-4">Welcome to Pantry Pal</h1>
+        <div className="flex items-center justify-center mb-6">
+          <img 
+            src="/images/pantry-logo.svg" 
+            alt="PantryPal Logo" 
+            className="w-16 h-20 mr-4"
+          />
+          <h1 className="text-4xl font-semibold tracking-wide">Welcome to Pantry Pal</h1>
+        </div>
         <p className="text-xl text-muted-foreground mb-8">
           Your personal recipe discovery and meal planning assistant
         </p>
@@ -103,7 +110,11 @@ export default function HomePage({ params }: HomePageProps) {
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         <Card>
           <CardHeader>
-            <ChefHat className="h-8 w-8 mb-2 text-orange-500" />
+            <img 
+              src="/images/pantry-logo.svg" 
+              alt="PantryPal Logo" 
+              className="h-8 w-6 mb-2"
+            />
             <CardTitle>Discover Recipes</CardTitle>
             <CardDescription>
               Find delicious recipes based on your available ingredients

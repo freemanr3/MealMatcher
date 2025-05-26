@@ -7,11 +7,11 @@ import { Card } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Separator } from "@/components/ui/separator";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Clock, DollarSign, Users, ChevronLeft, Heart, Bookmark, Share2, Printer } from "lucide-react";
+import { Clock, DollarSign, Users, ChevronLeft, Heart, Bookmark, Share2, Printer, Info } from "lucide-react";
 import { recipeService } from "@/services/recipeService";
-import { Header } from "@/components/header";
 import { InteractiveSteps } from "@/components/recipe/InteractiveSteps";
 import { sanitizeHtml } from "@/lib/recipeUtils";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
 // Define the params type
 type RecipeParams = {
@@ -20,7 +20,7 @@ type RecipeParams = {
 
 const RecipeDetail = () => {
   const [, setLocation] = useLocation();
-  const [match, params] = useRoute<RecipeParams>("/recipes/:id");
+  const [match, params] = useRoute<RecipeParams>("/recipe/:id");
   const [isSaved, setIsSaved] = useState(false);
   
   // Get recipe ID from URL params
@@ -64,7 +64,6 @@ const RecipeDetail = () => {
   if (isLoading) {
     return (
       <div className="min-h-screen bg-gradient-to-b from-orange-50 to-white">
-        <Header />
         <div className="container max-w-4xl mx-auto px-4 py-8">
           <div className="flex items-center mb-6">
             <Skeleton className="h-10 w-20" />
@@ -107,7 +106,6 @@ const RecipeDetail = () => {
   if (error || !recipe) {
     return (
       <div className="min-h-screen bg-gradient-to-b from-orange-50 to-white">
-        <Header />
         <div className="container max-w-4xl mx-auto px-4 py-8 text-center">
           <h1 className="text-2xl font-bold mb-4">Recipe Not Found</h1>
           <p className="mb-6">Sorry, we couldn't find the recipe you're looking for.</p>
@@ -122,7 +120,6 @@ const RecipeDetail = () => {
   
   return (
     <div className="min-h-screen bg-gradient-to-b from-orange-50 to-white">
-      <Header />
       <article className="container max-w-4xl mx-auto px-4 py-8">
         {/* Back button and actions */}
         <div className="flex items-center justify-between mb-6">
@@ -187,16 +184,21 @@ const RecipeDetail = () => {
             )}
           </div>
           
-          {/* Key metrics */}
+          {/* Key metrics - improved time logic */}
           <div className="grid grid-cols-3 gap-4 text-center">
             <div className="p-4 bg-white rounded-lg shadow-sm">
               <div className="flex justify-center mb-2">
                 <Clock className="h-6 w-6 text-orange-500" />
               </div>
-              <p className="text-sm text-muted-foreground">Prep Time</p>
-              <p className="font-semibold">{recipe.cookingTime} min</p>
+              <p className="text-sm text-muted-foreground">Total Time</p>
+              <p className="font-semibold">
+                {typeof recipe.preparationMinutes === 'number' && recipe.preparationMinutes > 0 && typeof recipe.cookingMinutes === 'number' && recipe.cookingMinutes > 0
+                  ? `${recipe.preparationMinutes + recipe.cookingMinutes} min`
+                  : typeof recipe.readyInMinutes === 'number' && recipe.readyInMinutes > 0
+                    ? `${recipe.readyInMinutes} min`
+                    : '—'}
+              </p>
             </div>
-            
             <div className="p-4 bg-white rounded-lg shadow-sm">
               <div className="flex justify-center mb-2">
                 <Users className="h-6 w-6 text-orange-500" />
@@ -204,13 +206,12 @@ const RecipeDetail = () => {
               <p className="text-sm text-muted-foreground">Servings</p>
               <p className="font-semibold">{recipe.servings}</p>
             </div>
-            
             <div className="p-4 bg-white rounded-lg shadow-sm">
               <div className="flex justify-center mb-2">
                 <DollarSign className="h-6 w-6 text-orange-500" />
               </div>
               <p className="text-sm text-muted-foreground">Est. Cost</p>
-              <p className="font-semibold">${recipe.estimatedCost.toFixed(2)}</p>
+              <p className="font-semibold">${recipe.estimatedCost && !isNaN(recipe.estimatedCost) ? recipe.estimatedCost.toFixed(2) : '—'}</p>
             </div>
           </div>
         </div>
