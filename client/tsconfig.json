@@ -20,7 +20,9 @@
       "@/*": ["src/*"],
       "@/shared/*": ["shared/*"]
     },
-    "types": ["vite/client", "@stripe/stripe-js", "@stripe/react-stripe-js"]
+    "types": ["vite/client", "@stripe/stripe-js", "@stripe/react-stripe-js"],
+    "allowSyntheticDefaultImports": true,
+    "esModuleInterop": true
   },
   "include": ["src", "shared"],
   "references": [{ "path": "./tsconfig.node.json" }]
