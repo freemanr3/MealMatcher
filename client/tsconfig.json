@@ -5,7 +5,7 @@
     "lib": ["ES2020", "DOM", "DOM.Iterable"],
     "module": "ESNext",
     "skipLibCheck": true,
-    "moduleResolution": "bundler",
+    "moduleResolution": "node",
     "allowImportingTsExtensions": true,
     "resolveJsonModule": true,
     "isolatedModules": true,
@@ -20,7 +20,7 @@
       "@/*": ["src/*"],
       "@/shared/*": ["shared/*"]
     },
-    "types": ["vite/client"]
+    "types": ["vite/client", "@stripe/stripe-js", "@stripe/react-stripe-js"]
   },
   "include": ["src", "shared"],
   "references": [{ "path": "./tsconfig.node.json" }]
