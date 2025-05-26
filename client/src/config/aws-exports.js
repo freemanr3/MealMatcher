@@ -1,22 +1,30 @@
-// This is an auto-generated file with Amplify configuration
-// You can replace this with the actual configuration from your Amplify project
-const awsExports = {
-  Auth: {
-    region: 'us-east-1',
-    userPoolId: process.env.REACT_APP_USER_POOL_ID || import.meta.env.VITE_USER_POOL_ID || 'us-east-1_XXXXXXXXX',
-    userPoolWebClientId: process.env.REACT_APP_USER_POOL_CLIENT_ID || import.meta.env.VITE_USER_POOL_CLIENT_ID || 'XXXXXXXXXXXXXXXXXXXXXXXXXX',
-    mandatorySignIn: false,
-    authenticationFlowType: 'USER_SRP_AUTH',
-    signUpAttributes: ['email'],
-    usernameAttributes: ['email'],
-    mfaConfiguration: 'OPTIONAL',
-    mfaTypes: ['TOTP'],
-    passwordProtectionSettings: {
-      passwordPolicyMinLength: 8,
-      passwordPolicyCharacters: []
+/* eslint-disable */
+// AWS Cognito Configuration - Replace these values with your actual AWS Cognito settings
+const awsConfig = {
+    "aws_project_region": "us-east-2", // Replace with your AWS region
+    "aws_cognito_region": "us-east-2", // Replace with your Cognito region (usually same as project region)
+    "aws_user_pools_id": "us-east-2_YWfa08XCX", // Replace with your User Pool ID
+    "aws_user_pools_web_client_id": "4sj8htmmqst54qdg7joa8guams", // Replace with your App Client ID
+    "aws_cognito_username_attributes": [
+        "EMAIL"
+    ],
+    "aws_cognito_signup_attributes": [
+        "EMAIL",
+        "NAME"
+    ],
+    "aws_cognito_mfa_configuration": "OFF",
+    "aws_cognito_password_protection_settings": {
+        "passwordPolicyMinLength": 8,
+        "passwordPolicyCharacters": [
+            "REQUIRES_LOWERCASE",
+            "REQUIRES_UPPERCASE",
+            "REQUIRES_NUMBERS",
+            "REQUIRES_SYMBOLS"
+        ]
     },
-    verificationMechanisms: ['EMAIL']
-  }
+    "aws_cognito_verification_mechanisms": [
+        "EMAIL"
+    ]
 };
 
-export default awsExports; 
+export default awsConfig; 

@@ -1,10 +1,20 @@
+import React from 'react';
 import { Link } from 'wouter';
+import { useLocation } from 'wouter';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { useAuth } from '@/hooks/useAuth';
 
-export default function PricingPage() {
+// Define props type
+type PricingPageProps = {
+  params?: {
+    [key: string]: string | undefined;
+  };
+};
+
+export default function PricingPage({ params }: PricingPageProps) {
   const { user } = useAuth();
+  const [, setLocation] = useLocation();
 
   return (
     <div className="min-h-screen bg-background">

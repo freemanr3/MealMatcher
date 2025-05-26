@@ -1,62 +1,105 @@
-# Pantry Pal
+# PantryPal
 
-A modern web application for matching meals and recipes.
+PantryPal is a meal planning application that helps users discover recipes based on ingredients they have on hand, plan meals, and reduce food waste.
 
-## Project Structure
+## Features
 
-```
-MealMatcher/
-├── client/           # Frontend application
-├── server/           # Backend application
-├── shared/           # Shared code between client and server
-├── Config/           # Configuration files
-├── assets/           # Static assets
-├── docs/             # Documentation
-├── tests/            # Test files
-└── scripts/          # Build and deployment scripts
-```
+- User authentication via AWS Cognito
+- Recipe discovery based on available ingredients
+- Meal planning functionality
+- Ingredient management
+- Responsive design for desktop and mobile
+
+## Technology Stack
+
+- Frontend: React with TypeScript
+- UI: Custom components with Tailwind CSS
+- Authentication: AWS Cognito
+- API: RESTful backend
+- State Management: React Context API and React Query
 
 ## Getting Started
 
-1. Clone the repository
+### Prerequisites
+
+- Node.js (v16 or higher)
+- npm or yarn
+- AWS account (for Cognito authentication)
+
+### Installation
+
+1. Clone the repository:
+   ```bash
+   git clone https://github.com/yourusername/PantryPal.git
+   cd PantryPal
+   ```
+
 2. Install dependencies:
    ```bash
+   cd client
    npm install
    ```
-3. Set up environment variables:
-   ```bash
-   cp .env.example .env
-   ```
+
+3. Configure AWS Cognito:
+   - Follow the instructions in `client/src/AWS_COGNITO_SETUP.md` to set up an AWS Cognito User Pool
+   - Update the configuration in `client/src/config/aws-exports.js` with your AWS credentials
+
 4. Start the development server:
    ```bash
    npm run dev
    ```
 
+5. The application should now be running at `http://localhost:5173` (or another port if specified)
+
+## AWS Cognito Authentication
+
+This application uses AWS Cognito for user authentication. Key features include:
+
+- User registration with email verification
+- User login with username/email and password
+- Secure token-based authentication
+- Password recovery
+
+For detailed setup instructions, refer to `client/src/AWS_COGNITO_SETUP.md`.
+
 ## Development
 
-- Frontend: `npm run dev:client`
-- Backend: `npm run dev:server`
-- Tests: `npm test`
+### Project Structure
 
-## Building for Production
-
-```bash
-npm run build
 ```
+client/
+├── public/            # Static assets
+├── src/
+│   ├── components/    # UI components
+│   ├── config/        # Configuration files
+│   ├── context/       # React contexts
+│   ├── hooks/         # Custom React hooks
+│   ├── lib/           # Utility functions
+│   ├── pages/         # Page components
+│   └── styles/        # Global styles
+└── ...                # Config files
+```
+
+### Available Scripts
+
+- `npm run dev` - Start development server
+- `npm run build` - Build for production
+- `npm run preview` - Preview production build
 
 ## Contributing
 
-1. Create a new branch for your feature
-2. Make your changes
-3. Submit a pull request
+1. Fork the repository
+2. Create a feature branch
+3. Make your changes
+4. Submit a pull request
 
 ## License
 
-This project is licensed under the MIT License.
+This project is licensed under the MIT License - see the LICENSE file for details.
 
 🍽️ Pantry Pal - Swipe Right on Dinner!
 
-Pantry Pal is a Tinder-like meal planning app that helps users discover meal ideas based on the ingredients they already have at home. With a fun swipe interface, users can match with recipes tailored to their pantry, dietary restrictions, and preferences. MealMatchr helps reduce food waste, inspire creativity in the kitchen, and make meal planning easy and enjoyable.
+Pantry Pal is a Tinder-like meal planning app that helps users discover meal ideas based on the ingredients they already have at home. With a fun swipe interface, users can match with recipes tailored to their pantry, dietary restrictions, and preferences. Pantry Pal helps reduce food waste, inspire creativity in the kitchen, and make meal planning easy and enjoyable.
 
 📱 Features
 

@@ -1,113 +1,108 @@
-import React from 'react';
-import { Authenticator, useAuthenticator, View, Image, Heading, Text } from '@aws-amplify/ui-react';
-import { useLocation } from 'wouter';
+import React, { createContext, useContext, ReactNode } from 'react';
+import { Authenticator, useAuthenticator } from '@aws-amplify/ui-react';
+import { signOut } from 'aws-amplify/auth';
+import '@aws-amplify/ui-react/styles.css';
+
+console.log('AuthenticatorWrapper module loading');
+
+// Create a context for authentication
+interface AuthContextType {
+  isAuthenticated: boolean;
+  user: any;
+  signOut: () => Promise<void>;
+}
+
+const AuthContext = createContext<AuthContextType | undefined>(undefined);
+
+// Custom hook for accessing auth context
+export const useAuth = () => {
+  const context = useContext(AuthContext);
+  if (!context) {
+    throw new Error('useAuth must be used within an AuthenticatorWrapper');
+  }
+  return context;
+};
 
 interface AuthenticatorWrapperProps {
-  children: React.ReactNode;
+  children: ReactNode;
 }
 
 export const AuthenticatorWrapper: React.FC<AuthenticatorWrapperProps> = ({ children }) => {
-  const [, navigate] = useLocation();
-  
-  // Custom form fields - only include email for sign-in and sign-up
+  // Use Amplify's useAuthenticator hook to get auth state
+  const { user, authStatus } = useAuthenticator((context) => [
+    context.user,
+    context.authStatus
+  ]);
+
+  // Handle sign out
+  const handleSignOut = async (): Promise<void> => {
+    try {
+      await signOut();
+    } catch (error) {
+      console.error('Error signing out:', error);
+    }
+  };
+
+  // Provide auth context
+  const authContextValue: AuthContextType = {
+    isAuthenticated: authStatus === 'authenticated',
+    user,
+    signOut: handleSignOut
+  };
+
+  // Custom form fields for the authenticator
   const formFields = {
     signIn: {
       username: {
-        placeholder: 'Email',
-        isRequired: true,
         label: 'Email',
+        placeholder: 'Enter your email',
       },
       password: {
-        isRequired: true,
+        label: 'Password',
+        placeholder: 'Enter your password',
       },
     },
     signUp: {
-      username: {
-        placeholder: 'Email',
-        isRequired: true,
+      email: {
         label: 'Email',
+        placeholder: 'Enter your email',
+        required: true,
+      },
+      name: {
+        label: 'Name',
+        placeholder: 'Enter your full name',
+        required: true,
       },
       password: {
-        isRequired: true,
+        label: 'Password',
+        placeholder: 'Create a password',
+        required: true,
       },
       confirm_password: {
-        isRequired: true,
+        label: 'Confirm Password',
+        placeholder: 'Confirm your password',
       },
     },
-    confirmSignUp: {
-      confirmation_code: {
-        label: 'Verification Code',
-        placeholder: 'Enter the code sent to your email',
-        isRequired: true,
-      },
-    },
-  };
-
-  // Custom components for the Authenticator
-  const components = {
-    Header() {
-      return (
-        <View textAlign="center" padding="1rem">
-          <Heading level={3} padding="1rem 0">Pantry Pal</Heading>
-          <Text>Find recipes based on ingredients you already have</Text>
-        </View>
-      );
-    },
-    Footer() {
-      return (
-        <View textAlign="center" padding="1rem">
-          <Text fontSize="0.8rem">© {new Date().getFullYear()} Pantry Pal. All rights reserved.</Text>
-        </View>
-      );
-    },
-  };
-
-  // Function to handle successful sign-in
-  const handleSuccess = () => {
-    navigate('/');
-    return Promise.resolve();
   };
 
   return (
-    <Authenticator
-      formFields={formFields}
-      components={components}
-      loginMechanisms={['email']}
-      hideSignUp={false}
-      variation="modal"
-      services={{
-        handleSignIn: handleSuccess
-      }}
-    >
-      {children}
-    </Authenticator>
+    <AuthContext.Provider value={authContextValue}>
+      <Authenticator 
+        signUpAttributes={['email', 'name']}
+        formFields={formFields}
+        loginMechanisms={['email']}
+        components={{
+          Header: () => (
+            <div className="flex justify-center py-5">
+              <h1 className="text-2xl font-bold">PantryPal</h1>
+            </div>
+          ),
+        }}
+      >
+        {children}
+      </Authenticator>
+    </AuthContext.Provider>
   );
 };
 
-// Hook for checking authentication status
-export const useAuth = () => {
-  const auth = useAuthenticator();
-  return {
-    isAuthenticated: auth.authStatus === 'authenticated',
-    user: auth.user,
-    signOut: auth.signOut,
-    ...auth,
-  };
-};
-
-// HOC to protect routes
-export const withAuthProtection = <P extends object>(Component: React.ComponentType<P>) => {
-  return (props: P) => {
-    const { isAuthenticated } = useAuth();
-    const [, navigate] = useLocation();
-    const [currentPath] = useLocation();
-
-    React.useEffect(() => {
-      if (!isAuthenticated && currentPath !== '/auth') {
-        navigate('/auth');
-      }
-    }, [isAuthenticated, navigate, currentPath]);
-
-    return isAuthenticated ? <Component {...props} /> : null;
-  };
-}; 
+export default AuthenticatorWrapper; 
